@@ -187,52 +187,46 @@
 
         <!-- 2x2 Battle Status Grid Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <!-- Card 1: Player -->
-            <div class="bg-[var(--bg-main)] border-2 border-indigo-700/80 rounded-lg p-2 flex gap-2 items-center shadow-inner">
-                <div class="w-12 h-12 bg-indigo-900 border border-indigo-500 rounded flex items-center justify-center text-xl overflow-hidden shrink-0">
+            <!-- Card 1: Player (Solo) -->
+            <div class="bg-[var(--bg-main)] border-2 border-indigo-700/80 rounded-lg p-3 flex gap-3 items-center shadow-inner">
+                <div class="w-14 h-14 bg-indigo-900 border border-indigo-500 rounded-lg flex items-center justify-center text-2xl overflow-hidden shrink-0 shadow">
                     👦
                 </div>
-                <div class="flex-1 space-y-1 text-xs">
-                    <div class="font-bold text-indigo-300">郁悶寒少爷</div>
+                <div class="flex-1 space-y-1.5 text-xs">
+                    <div class="font-bold text-indigo-300 text-sm flex justify-between">
+                        <span>郁悶寒少爷</span>
+                        <span class="text-[10px] text-amber-400 font-normal">单机修仙者</span>
+                    </div>
                     <div>
-                        <div class="flex justify-between text-[10px] text-slate-300"><span>HP</span> <span id="p1Hp">418/418</span></div>
-                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
+                        <div class="flex justify-between text-[10px] text-slate-300"><span>HP (生命)</span> <span id="p1Hp">418/418</span></div>
+                        <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700">
                             <div id="p1HpBar" class="bg-red-600 h-full transition-all duration-300" style="width: 100%;"></div>
                         </div>
                     </div>
                     <div>
-                        <div class="flex justify-between text-[10px] text-slate-300"><span>MP</span> <span id="p1Mp">170/170</span></div>
-                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
+                        <div class="flex justify-between text-[10px] text-slate-300"><span>MP (真气)</span> <span id="p1Mp">170/170</span></div>
+                        <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700">
                             <div id="p1MpBar" class="bg-blue-600 h-full transition-all duration-300" style="width: 100%;"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 2: Ally/Guard -->
-            <div class="bg-[var(--bg-main)] border-2 border-slate-600/80 rounded-lg p-2 flex gap-2 items-center shadow-inner">
-                <div class="flex-1 space-y-1 text-xs text-right">
-                    <div class="font-bold text-slate-300">护卫头领</div>
-                    <div>
-                        <div class="flex justify-between text-[10px] text-slate-300"><span id="p2Hp">400/400</span> <span>HP</span></div>
-                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
-                            <div id="p2HpBar" class="bg-red-600 h-full transition-all duration-300" style="width: 100%;"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-[10px] text-slate-300"><span id="p2Mp">180/180</span> <span>MP</span></div>
-                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
-                            <div id="p2MpBar" class="bg-blue-600 h-full transition-all duration-300" style="width: 100%;"></div>
-                        </div>
-                    </div>
+            <!-- Card 2: Solo Status / Realm Insight -->
+            <div class="bg-[var(--bg-main)] border-2 border-amber-700/80 rounded-lg p-3 flex gap-3 items-center shadow-inner">
+                <div class="w-14 h-14 bg-amber-950 border border-amber-500 rounded-lg flex items-center justify-center text-2xl overflow-hidden shrink-0 shadow">
+                    ☯️
                 </div>
-                <div class="w-12 h-12 bg-slate-800 border border-slate-500 rounded flex items-center justify-center text-xl overflow-hidden shrink-0">
-                    🥷
+                <div class="flex-1 space-y-1 text-xs">
+                    <div class="font-bold text-amber-400">金丹大圆满境</div>
+                    <div class="text-slate-300 text-[11px] leading-relaxed">
+                        一人一剑闯九州，斩妖除魔证大道。<br>敌人随关卡递增实力，战意无穷！
+                    </div>
                 </div>
             </div>
 
             <!-- Card 3: Enemy 1 -->
-            <div class="bg-[var(--bg-main)] border-2 border-red-700/80 rounded-lg p-2 flex gap-2 items-center shadow-inner">
+            <div class="bg-[var(--bg-main)] border-2 border-red-700/80 rounded-lg p-2.5 flex gap-2 items-center shadow-inner">
                 <div class="w-12 h-12 bg-red-950 border border-red-500 rounded flex items-center justify-center text-xl overflow-hidden shrink-0">
                     🐛
                 </div>
@@ -254,7 +248,7 @@
             </div>
 
             <!-- Card 4: Enemy 2 -->
-            <div class="bg-[var(--bg-main)] border-2 border-amber-700/80 rounded-lg p-2 flex gap-2 items-center shadow-inner">
+            <div class="bg-[var(--bg-main)] border-2 border-amber-700/80 rounded-lg p-2.5 flex gap-2 items-center shadow-inner">
                 <div class="flex-1 space-y-1 text-xs text-right">
                     <div id="e2Name" class="font-bold text-amber-400">树怪</div>
                     <div>
@@ -431,9 +425,8 @@
             this.currentDifficulty = 'normal'; // normal, hell, nightmare, godlike
             this.unlockedBagSlots = 15; // 15 unlocked, 35 locked (total 50)
             
-            // Player stats
+            // Player stats (Solo protagonist)
             this.p1 = { hp: 418, maxHp: 418, mp: 170, maxMp: 170 };
-            this.p2 = { hp: 400, maxHp: 400, mp: 180, maxMp: 180 };
             this.baseAtk = 185;
             this.baseDef = 92;
 
@@ -449,7 +442,7 @@
                 ring2: null
             };
 
-            // Inventory items (initial items fit within the 15 unlocked slots)
+            // Inventory items
             this.inventory = [
                 { id: 1, name: "聚气大丹", type: "丹药", slotType: "consumable", count: 12, rarity: "white", icon: "💊", atkBonus: 0, defBonus: 0, desc: "基础修炼丹药" },
                 { id: 2, name: "青釭宝剑", type: "武器", slotType: "weapon", count: 1, rarity: "blue", icon: "🗡️", atkBonus: 45, defBonus: 10, desc: "锋利无比的战国名剑" },
@@ -589,20 +582,23 @@
             const stage = this.stages[idx];
             
             let diffMultiplier = 1.0;
-            if (this.currentDifficulty === 'hell') diffMultiplier = 1.3;
-            if (this.currentDifficulty === 'nightmare') diffMultiplier = 1.7;
-            if (this.currentDifficulty === 'godlike') diffMultiplier = 2.3;
+            if (this.currentDifficulty === 'hell') diffMultiplier = 1.4;
+            if (this.currentDifficulty === 'nightmare') diffMultiplier = 1.9;
+            if (this.currentDifficulty === 'godlike') diffMultiplier = 2.6;
 
-            const baseHp1 = 300 + idx*25;
-            const baseHp2 = 280 + idx*25;
+            // Enemies scale up progressively with each stage index (idx) and difficulty
+            const stageScaling = 1.0 + (idx * 0.18);
+            const baseHp1 = Math.floor((300 + idx * 45) * stageScaling * diffMultiplier);
+            const baseHp2 = Math.floor((280 + idx * 42) * stageScaling * diffMultiplier);
+            const baseMp1 = Math.floor((150 + idx * 20) * stageScaling);
+            const baseMp2 = Math.floor((140 + idx * 18) * stageScaling);
 
-            this.activeEnemy = { name: stage.enemy1, hp: Math.floor(baseHp1 * diffMultiplier), maxHp: Math.floor(baseHp1 * diffMultiplier), mp: 150, maxMp: 150 };
-            this.activeEnemy2 = { name: stage.enemy2, hp: Math.floor(baseHp2 * diffMultiplier), maxHp: Math.floor(baseHp2 * diffMultiplier), mp: 140, maxMp: 140 };
+            this.activeEnemy = { name: stage.enemy1, hp: baseHp1, maxHp: baseHp1, mp: baseMp1, maxMp: baseMp1 };
+            this.activeEnemy2 = { name: stage.enemy2, hp: baseHp2, maxHp: baseHp2, mp: baseMp2, maxMp: baseMp2 };
 
             document.getElementById("e1Name").textContent = stage.enemy1;
             document.getElementById("e2Name").textContent = stage.enemy2;
             this.p1.hp = this.p1.maxHp;
-            this.p2.hp = this.p2.maxHp;
 
             const diffNames = { normal: "普通", hell: "地獄", nightmare: "夢魘", godlike: "神人" };
             document.getElementById("currentBattleInfo").textContent = `当前关卡：${stage.name} (${diffNames[this.currentDifficulty]})`;
@@ -611,8 +607,8 @@
             this.switchTab('battle');
 
             const logBox = document.getElementById("battleLogContainer");
-            logBox.innerHTML = `<div class="text-amber-300 font-bold">【已进军关卡】${stage.realm}：${stage.name} [${diffNames[this.currentDifficulty]}]</div>
-                <div>敌方阵营：<span class="text-red-400">${stage.enemy1}</span> 与 <span class="text-amber-400">${stage.enemy2}</span> 严阵以待！</div>`;
+            logBox.innerHTML = `<div class="text-amber-300 font-bold">【单机历练】进军 ${stage.realm}：${stage.name} [${diffNames[this.currentDifficulty]}]</div>
+                <div>敌方强敌：<span class="text-red-400">${stage.enemy1} (HP: ${baseHp1})</span> 与 <span class="text-amber-400">${stage.enemy2} (HP: ${baseHp2})</span> 气势汹汹！</div>`;
         }
 
         startBattle() {
@@ -627,13 +623,13 @@
             });
             const totalAtk = this.baseAtk + extraAtk;
 
-            const dmg1 = Math.floor(Math.random() * 35) + Math.floor(totalAtk * 0.25);
-            const dmg2 = Math.floor(Math.random() * 30) + Math.floor(totalAtk * 0.2);
+            const dmg1 = Math.floor(Math.random() * 35) + Math.floor(totalAtk * 0.3);
+            const dmg2 = Math.floor(Math.random() * 30) + Math.floor(totalAtk * 0.25);
 
             this.activeEnemy.hp = Math.max(0, this.activeEnemy.hp - dmg1);
             this.activeEnemy2.hp = Math.max(0, this.activeEnemy2.hp - dmg2);
 
-            this.addBattleLog(`郁悶寒少爷 施展绝技 攻击敌方，造成 <span class="text-red-400 font-bold">${dmg1}</span> 与 <span class="text-red-400 font-bold">${dmg2}</span> 伤害！`);
+            this.addBattleLog(`郁悶寒少爷 孤身御剑，对敌方造成 <span class="text-red-400 font-bold">${dmg1}</span> 与 <span class="text-red-400 font-bold">${dmg2}</span> 伤害！`);
 
             if (this.activeEnemy.hp <= 0 && this.activeEnemy2.hp <= 0) {
                 const stage = this.stages[this.currentStageIndex];
@@ -664,8 +660,8 @@
                     }
                 }
 
-                this.addBattleLog(`<span class="text-emerald-400 font-bold">🎉 关卡大捷！经验 +${earnedExp}，银币 +${earnedSilver}</span>`);
-                this.showModal("关卡胜利", `恭喜通关【${stage.name}】(${this.currentDifficulty.toUpperCase()})！\n获得经验 ×${earnedExp}，银币 ×${earnedSilver}。\n${droppedItem ? '获得珍稀宝物：' + droppedItem.name : ''}`);
+                this.addBattleLog(`<span class="text-emerald-400 font-bold">🎉 独行大捷！经验 +${earnedExp}，银币 +${earnedSilver}</span>`);
+                this.showModal("关卡胜利", `恭喜单机通关【${stage.name}】(${this.currentDifficulty.toUpperCase()})！\n获得经验 ×${earnedExp}，银币 ×${earnedSilver}。\n${droppedItem ? '获得珍稀宝物：' + droppedItem.name : ''}`);
             }
 
             this.updateBattleUI();
@@ -919,8 +915,8 @@
         updateBattleUI() {
             document.getElementById("p1Hp").textContent = `${this.p1.hp}/${this.p1.maxHp}`;
             document.getElementById("p1HpBar").style.width = `${(this.p1.hp / this.p1.maxHp) * 100}%`;
-            document.getElementById("p2Hp").textContent = `${this.p2.hp}/${this.p2.maxHp}`;
-            document.getElementById("p2HpBar").style.width = `${(this.p2.hp / this.p2.maxHp) * 100}%`;
+            document.getElementById("p1Mp").textContent = `${this.p1.mp}/${this.p1.maxMp}`;
+            document.getElementById("p1MpBar").style.width = `${(this.p1.mp / this.p1.maxMp) * 100}%`;
 
             document.getElementById("e1Hp").textContent = `${this.activeEnemy.hp}/${this.activeEnemy.maxHp}`;
             document.getElementById("e1HpBar").style.width = `${(this.activeEnemy.hp / this.activeEnemy.maxHp) * 100}%`;
