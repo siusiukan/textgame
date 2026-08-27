@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="theme-dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>戰國風雲錄：問道修仙與江湖征戰</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
+
+        :root {
+            --bg-main: #141824;
+            --bg-card: #1e2538;
+            --border-gold: #c29b61;
+            --text-main: #e2d4c0;
+            --text-gold: #d4af37;
+        }
+
+        .theme-light {
+            --bg-main: #f0ede6;
+            --bg-card: #e4dfd3;
+            --border-gold: #8c6732;
+            --text-main: #2c241d;
+            --text-gold: #8c6732;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Noto Serif SC', serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            margin: 0;
+            padding: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .game-shell {
+            max-width: 1200px;
+            width: 100%;
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 0 2px var(--border-gold) inset;
+            border: 2px solid var(--border-gold);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 10px; }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border-gold);
+            border-radius: 12px;
+            max-width: 450px;
+            width: 100%;
+            padding: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.7);
+            color: var(--text-main);
+        }
+        .hidden { display: none !important; }
+
+        .map-container {
+            position: relative;
+            background: radial-gradient(circle, #1a2236 0%, #0d111a 100%);
+            border: 2px solid #52422c;
+            border-radius: 8px;
+            overflow: auto;
+            height: 480px;
+            padding: 16px;
+        }
+
+        .map-node {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .map-node:hover {
+            transform: translate(-50%, -50%) scale(1.15);
+            z-index: 10;
+        }
+
+        /* Rarity Borders without text labels */
+        .rarity-white { border: 2px solid #9ca3af; background: rgba(156,163,175,0.05); }
+        .rarity-green { border: 2px solid #22c55e; background: rgba(34,197,94,0.08); box-shadow: 0 0 8px rgba(34,197,94,0.3); }
+        .rarity-blue { border: 2px solid #3b82f6; background: rgba(59,130,246,0.08); box-shadow: 0 0 10px rgba(59,130,246,0.35); }
+        .rarity-purple { border: 2px solid #a855f7; background: rgba(168,85,247,0.08); box-shadow: 0 0 12px rgba(168,85,247,0.4); }
+        .rarity-red { border: 2px solid #ef4444; background: rgba(239,68,68,0.08); box-shadow: 0 0 14px rgba(239,68,68,0.5); }
+        .rarity-yellow { border: 2px solid #eab308; background: rgba(234,179,8,0.08); box-shadow: 0 0 16px rgba(234,179,8,0.6); }
+        .rarity-platinum {
+            border: 2px solid #f8fafc;
+            background: linear-gradient(135deg, rgba(248,250,252,0.15), rgba(148,163,184,0.25));
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(255,255,255,0.4);
+        }
+        .rarity-rainbow {
+            border: 2px solid transparent;
+            background: linear-gradient(var(--bg-card), var(--bg-card)) padding-box,
+                        linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet) border-box;
+            animation: rainbowBorder 3s linear infinite;
+            box-shadow: 0 0 25px rgba(236, 72, 153, 0.8), 0 0 12px rgba(59, 130, 246, 0.8);
+        }
+
+        @keyframes rainbowBorder {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+<div class="game-shell">
+    
+    <!-- Top Header Bar -->
+    <div class="flex flex-wrap items-center justify-between bg-[var(--bg-main)] px-3 py-2 rounded-lg border border-[var(--border-gold)] text-xs shadow-sm gap-2">
+        <div class="flex items-center gap-2">
+            <span class="font-bold text-amber-400 text-sm" id="headerCharName">郁悶寒少爷</span>
+            <span class="bg-amber-950 text-amber-300 px-2 py-0.5 rounded text-[10px] border border-amber-700" id="headerLevel">Lv.27级</span>
+        </div>
+        <div class="flex items-center gap-4 font-medium">
+            <div class="flex items-center gap-1">
+                <span>🪙</span> <span id="silverDisplay" class="font-bold text-slate-200">2,6703</span>
+            </div>
+            <div class="flex items-center gap-1">
+                <span>💰</span> <span id="goldDisplay" class="font-bold text-amber-400">120</span>
+            </div>
+            <button onclick="game.toggleTheme()" class="px-2.5 py-1 rounded border border-[var(--border-gold)] bg-[var(--bg-card)] hover:opacity-80 transition cursor-pointer text-[11px]">
+                ☯️ 切换
+            </button>
+        </div>
+    </div>
+
+    <!-- Navigation Tab Buttons -->
+    <div class="grid grid-cols-6 gap-1 bg-[var(--bg-main)] p-1 rounded-lg border border-[var(--border-gold)] text-center text-xs font-bold">
+        <button onclick="game.switchTab('char')" id="tabBtnChar" class="py-1.5 rounded transition bg-[var(--bg-card)] border border-[var(--border-gold)]">角色</button>
+        <button onclick="game.switchTab('bag')" id="tabBtnBag" class="py-1.5 rounded transition bg-[var(--bg-card)] border border-[var(--border-gold)] relative">背包 <span id="bagBadge" class="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] px-1 rounded-full">4</span></button>
+        <button onclick="game.switchTab('map')" id="tabBtnMap" class="py-1.5 rounded transition bg-[var(--bg-card)] border border-[var(--border-gold)]">舆图关卡</button>
+        <button onclick="game.switchTab('battle')" id="tabBtnBattle" class="py-1.5 rounded transition bg-amber-700 text-white shadow">战斗</button>
+        <button onclick="game.switchTab('chat')" id="tabBtnChat" class="py-1.5 rounded transition bg-[var(--bg-card)] border border-[var(--border-gold)]">聊天</button>
+        <button onclick="game.switchTab('menu')" id="tabBtnMenu" class="py-1.5 rounded transition bg-[var(--bg-card)] border border-[var(--border-gold)]">菜单</button>
+    </div>
+
+    <!-- Battle Tab Content matching reference image layout -->
+    <div id="tabContentBattle" class="flex flex-col gap-2">
+        <div class="flex flex-wrap items-center justify-between gap-2 bg-[var(--bg-main)] p-2 rounded-lg border border-[var(--border-gold)]">
+            <div class="flex items-center gap-2">
+                <button onclick="game.startBattle()" id="btnStartBattle" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-1.5 rounded text-xs shadow border border-indigo-400 cursor-pointer">
+                    开始战斗
+                </button>
+                <label class="flex items-center gap-1 text-xs cursor-pointer">
+                    <input type="checkbox" id="autoBattleToggle" onchange="game.toggleAutoBattle()" class="w-4 h-4 accent-amber-600 rounded">
+                    <span>自动战斗</span>
+                </label>
+            </div>
+            <div class="flex items-center gap-2 text-xs">
+                <span class="text-amber-400 font-bold" id="currentBattleInfo">当前关卡：渔阳密林 (普通)</span>
+                <button onclick="game.switchTab('map')" class="bg-red-600 hover:bg-red-500 text-white font-bold px-3 py-1.5 rounded text-xs shadow border border-red-400 cursor-pointer">
+                    返回
+                </button>
+            </div>
+        </div>
+
+        <!-- 2x2 Battle Status Grid Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <!-- Card 1: Player -->
+            <div class="bg-[var(--bg-main)] border-2 border-indigo-700/80 rounded-lg p-2 flex gap-2 items-center shadow-inner">
+                <div class="w-12 h-12 bg-indigo-900 border border-indigo-500 rounded flex items-center justify-center text-xl overflow-hidden shrink-0">
+                    👦
+                </div>
+                <div class="flex-1 space-y-1 text-xs">
+                    <div class="font-bold text-indigo-300">郁悶寒少爷</div>
+                    <div>
+                        <div class="flex justify-between text-[10px] text-slate-300"><span>HP</span> <span id="p1Hp">418/418</span></div>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
+                            <div id="p1HpBar" class="bg-red-600 h-full transition-all duration-300" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-[10px] text-slate-300"><span>MP</span> <span id="p1Mp">170/170</span></div>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
+                            <div id="p1MpBar" class="bg-blue-600 h-full transition-all duration-300" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Ally/Guard -->
+            <div class="bg-[var(--bg-main)] border-2 border-slate-600/80 rounded-lg p-2 flex gap-2 items-center shadow-inner">
+                <div class="flex-1 space-y-1 text-xs text-right">
+                    <div class="font-bold text-slate-300">护卫头领</div>
+                    <div>
+                        <div class="flex justify-between text-[10px] text-slate-300"><span id="p2Hp">400/400</span> <span>HP</span></div>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
+                            <div id="p2HpBar" class="bg-red-600 h-full transition-all duration-300" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-[10px] text-slate-300"><span id="p2Mp">180/180</span> <span>MP</span></div>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
+                            <div id="p2MpBar" class="bg-blue-600 h-full transition-all duration-300" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-12 h-12 bg-slate-800 border border-slate-500 rounded flex items-center justify-center text-xl overflow-hidden shrink-0">
+                    🥷
+                </div>
+            </div>
+
+            <!-- Card 3: Enemy 1 -->
+            <div class="bg-[var(--bg-main)] border-2 border-red-700/80 rounded-lg p-2 flex gap-2 items-center shadow-inner">
+                <div class="w-12 h-12 bg-red-950 border border-red-500 rounded flex items-center justify-center text-xl overflow-hidden shrink-0">
+                    🐛
+                </div>
+                <div class="flex-1 space-y-1 text-xs">
+                    <div id="e1Name" class="font-bold text-red-400">海毛虫</div>
+                    <div>
+                        <div class="flex justify-between text-[10px] text-slate-300"><span>HP</span> <span id="e1Hp">336/336</span></div>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
+                            <div id="e1HpBar" class="bg-red-600 h-full transition-all duration-300" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-[10px] text-slate-300"><span>MP</span> <span id="e1Mp">157/157</span></div>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
+                            <div id="e1MpBar" class="bg-blue-600 h-full transition-all duration-300" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4: Enemy 2 -->
+            <div class="bg-[var(--bg-main)] border-2 border-amber-700/80 rounded-lg p-2 flex gap-2 items-center shadow-inner">
+                <div class="flex-1 space-y-1 text-xs text-right">
+                    <div id="e2Name" class="font-bold text-amber-400">树怪</div>
+                    <div>
+                        <div class="flex justify-between text-[10px] text-slate-300"><span id="e2Hp">320/320</span> <span>HP</span></div>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
+                            <div id="e2HpBar" class="bg-red-600 h-full transition-all duration-300" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-[10px] text-slate-300"><span id="e2Mp">144/144</span> <span>MP</span></div>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
+                            <div id="e2MpBar" class="bg-blue-600 h-full transition-all duration-300" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-12 h-12 bg-amber-950 border border-amber-500 rounded flex items-center justify-center text-xl overflow-hidden shrink-0">
+                    🌳
+                </div>
+            </div>
+        </div>
+
+        <!-- Combat Log Feed -->
+        <div class="bg-[var(--bg-main)] rounded-lg p-2.5 border border-[var(--border-gold)]">
+            <div id="battleLogContainer" class="h-40 overflow-y-auto font-mono text-xs space-y-1 leading-relaxed">
+                <div class="text-emerald-400 font-bold">【战国战场就绪】请在舆图选择关卡与难度并开始迎敌！</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Tab Content matching reference image 2 (strategic node network) -->
+    <div id="tabContentMap" class="hidden flex flex-col gap-2">
+        <div class="flex flex-wrap justify-between items-center bg-[var(--bg-main)] p-2 rounded-lg border border-[var(--border-gold)] text-xs gap-2">
+            <div class="font-bold text-amber-400">🗺️ 九州战国・战略舆图与关卡网络</div>
+            <div class="flex items-center gap-1.5">
+                <span class="text-slate-300 font-semibold">选择难度：</span>
+                <select id="difficultySelect" onchange="game.changeDifficulty(this.value)" class="bg-[var(--bg-card)] border border-[var(--border-gold)] text-amber-300 rounded px-2 py-1 text-xs font-bold">
+                    <option value="normal">🟢 普通关卡 (1.0x 掉落)</option>
+                    <option value="hell">🔵 地獄关卡 (1.5x 掉落+稀有)</option>
+                    <option value="nightmare">🟣 夢魘关卡 (2.2x 掉落+极品)</option>
+                    <option value="godlike">🔴 神人关卡 (3.5x 掉落+彩虹白金)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="map-container" id="mapContainerElement">
+            <svg id="mapSvgLines" class="absolute inset-0 w-full h-full pointer-events-none" style="min-width: 800px; min-height: 440px;"></svg>
+            <div id="mapNodesWrapper" class="relative w-full h-full" style="min-width: 800px; min-height: 440px;">
+                <!-- Dynamically positioned nodes -->
+            </div>
+        </div>
+        <div class="text-[11px] text-center opacity-70">
+            提示：依过关顺序推进各诸侯国节点！挑战更高难度可解锁闪耀白金与动态彩虹光神装！
+        </div>
+    </div>
+
+    <!-- Character Equipment Tab matching reference image layout -->
+    <div id="tabContentChar" class="hidden bg-[var(--bg-main)] p-4 rounded-lg border border-[var(--border-gold)] text-xs space-y-3">
+        <div class="flex justify-between items-center border-b border-[var(--border-gold)] pb-1.5">
+            <h3 class="font-bold text-amber-400">📜 掌门角色档案与装备槽位</h3>
+            <span class="text-[10px] text-slate-400">点击装备槽卸下装备</span>
+        </div>
+
+        <div class="flex flex-col items-center justify-center py-2">
+            <!-- Exact Reference Image Layout for Equipment Slots -->
+            <div class="relative w-[340px] h-[340px] bg-[var(--bg-card)] border-2 border-[var(--border-gold)] rounded-xl p-4 flex flex-col items-center justify-center shadow-2xl">
+                
+                <!-- Top Row Slots (4 items) -->
+                <div class="absolute top-3 left-4 right-4 flex justify-between px-1">
+                    <div id="eqSlot_amulet1" onclick="game.unequipSlot('amulet1')" class="w-12 h-12 bg-[var(--bg-main)] border-2 border-dashed border-[var(--border-gold)] rounded-lg flex items-center justify-center text-xl cursor-pointer hover:border-amber-400 transition shadow" title="饰品1">💍</div>
+                    <div id="eqSlot_amulet2" onclick="game.unequipSlot('amulet2')" class="w-12 h-12 bg-[var(--bg-main)] border-2 border-dashed border-[var(--border-gold)] rounded-lg flex items-center justify-center text-xl cursor-pointer hover:border-amber-400 transition shadow" title="饰品2">📿</div>
+                    <div id="eqSlot_ring1" onclick="game.unequipSlot('ring1')" class="w-12 h-12 bg-[var(--bg-main)] border-2 border-dashed border-[var(--border-gold)] rounded-lg flex items-center justify-center text-xl cursor-pointer hover:border-amber-400 transition shadow" title="戒指1">💍</div>
+                    <div id="eqSlot_ring2" onclick="game.unequipSlot('ring2')" class="w-12 h-12 bg-[var(--bg-main)] border-2 border-dashed border-[var(--border-gold)] rounded-lg flex items-center justify-center text-xl cursor-pointer hover:border-amber-400 transition shadow" title="戒指2">💍</div>
+                </div>
+
+                <!-- Left Row Slots -->
+                <div class="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-4">
+                    <div id="eqSlot_helm" onclick="game.unequipSlot('helm')" class="w-12 h-12 bg-[var(--bg-main)] border-2 border-[var(--border-gold)] rounded-lg flex items-center justify-center text-xl cursor-pointer hover:border-amber-400 transition shadow" title="头盔">🪖</div>
+                    <div id="eqSlot_weapon" onclick="game.unequipSlot('weapon')" class="w-12 h-12 bg-[var(--bg-main)] border-2 border-[var(--border-gold)] rounded-lg flex items-center justify-center text-xl cursor-pointer hover:border-amber-400 transition shadow" title="武器">⚔️</div>
+                </div>
+
+                <!-- Right Row Slots -->
+                <div class="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-4">
+                    <div id="eqSlot_armor" onclick="game.unequipSlot('armor')" class="w-12 h-12 bg-[var(--bg-main)] border-2 border-[var(--border-gold)] rounded-lg flex items-center justify-center text-xl cursor-pointer hover:border-amber-400 transition shadow" title="战甲">🛡️</div>
+                    <div id="eqSlot_boots" onclick="game.unequipSlot('boots')" class="w-12 h-12 bg-[var(--bg-main)] border-2 border-[var(--border-gold)] rounded-lg flex items-center justify-center text-xl cursor-pointer hover:border-amber-400 transition shadow" title="战靴">👢</div>
+                </div>
+
+                <!-- Center Avatar & Stats -->
+                <div class="flex flex-col items-center justify-center my-auto">
+                    <div class="w-20 h-20 bg-indigo-950 border-2 border-indigo-400 rounded-lg flex items-center justify-center text-4xl shadow-md mb-1">
+                        👦
+                    </div>
+                    <div class="font-bold text-amber-400 text-sm">郁悶寒少爷</div>
+                    <div class="text-[10px] text-slate-300">金丹大圆满 · Lv.27</div>
+                    <div class="flex gap-3 mt-1 text-xs">
+                        <div>攻击: <span id="charAtk" class="font-bold text-red-400">185</span></div>
+                        <div>防御: <span id="charDef" class="font-bold text-sky-400">92</span></div>
+                    </div>
+                </div>
+
+                <!-- Bottom Action Controls matching reference image -->
+                <div class="absolute bottom-2 left-4 right-4 flex flex-col items-center gap-1.5">
+                    <div class="text-[10px] text-slate-400">快速切换装备套装</div>
+                    <div class="flex gap-1">
+                        <button class="px-2 py-0.5 bg-[var(--bg-main)] border border-[var(--border-gold)] rounded text-[10px] text-amber-300 font-bold">1</button>
+                        <button class="px-2 py-0.5 bg-[var(--bg-main)] border border-[var(--border-gold)] rounded text-[10px] text-amber-300 font-bold">2</button>
+                        <button class="px-2 py-0.5 bg-[var(--bg-main)] border border-[var(--border-gold)] rounded text-[10px] text-amber-300 font-bold">3</button>
+                        <button class="px-2 py-0.5 bg-[var(--bg-main)] border border-[var(--border-gold)] rounded text-[10px] text-slate-300">看</button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="px-3 py-0.5 bg-amber-800 text-white rounded text-[10px] font-bold">法宝</button>
+                        <button class="px-3 py-0.5 bg-red-900 text-white rounded text-[10px] font-bold">锦衣</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Tab Content (50 slots total: 15 unlocked, 35 locked) -->
+    <div id="tabContentBag" class="hidden bg-[var(--bg-main)] p-4 rounded-lg border border-[var(--border-gold)] text-xs space-y-3">
+        <div class="flex justify-between items-center border-b border-[var(--border-gold)] pb-1.5">
+            <h3 class="font-bold text-amber-400">🎒 神兵灵药行囊 (共50格：15已开启，35锁定)</h3>
+            <span class="text-[10px] text-slate-400">点击物品可装备或使用，点击锁定位可消耗银币开启</span>
+        </div>
+        <div id="inventoryContainer" class="grid grid-cols-5 sm:grid-cols-10 gap-2">
+            <!-- Dynamically populated 50 slots -->
+        </div>
+    </div>
+
+    <!-- Chat Tab Content -->
+    <div id="tabContentChat" class="hidden bg-[var(--bg-main)] p-4 rounded-lg border border-[var(--border-gold)] text-xs space-y-2">
+        <h3 class="font-bold text-amber-400 border-b border-[var(--border-gold)] pb-1.5">💬 世界修仙频道</h3>
+        <div class="bg-[var(--bg-card)] p-3 rounded h-36 overflow-y-auto space-y-1 font-mono">
+            <div><span class="text-amber-400">[世界] 墨家巨子:</span> 诸国神人级关卡已全线开启，谁能爆出彩虹光白金神兵？</div>
+            <div><span class="text-indigo-400">[仙盟] 郁悶寒少爷:</span> 正在横扫各郡秘境，搜罗高级装备！</div>
+            <div><span class="text-emerald-400">[传闻] 系统提示:</span> 玩家在梦魘关卡斩杀首领，获得紫色极品战甲！</div>
+        </div>
+    </div>
+
+    <!-- Menu Tab Content -->
+    <div id="tabContentMenu" class="hidden bg-[var(--bg-main)] p-4 rounded-lg border border-[var(--border-gold)] text-xs space-y-3">
+        <h3 class="font-bold text-amber-400 border-b border-[var(--border-gold)] pb-1.5">⚙️ 系统功能菜单</h3>
+        <div class="grid grid-cols-2 gap-2">
+            <button onclick="game.switchTab('map')" class="bg-amber-700 hover:bg-amber-600 text-white p-2 rounded font-bold cursor-pointer">🗺️ 切换至关卡舆图</button>
+            <button onclick="game.showModal('难度与掉落说明', '普通：基础经验与银币掉落。\n地獄：1.5倍加成，绿蓝紫装掉率提升。\n夢魘：2.2倍加成，高概率爆红装与黄装。\n神人：3.5倍顶级加成，必出白金神兵及彩虹光特效装备！')" class="bg-[var(--bg-card)] border border-[var(--border-gold)] p-2 rounded font-bold cursor-pointer">📖 难度与掉落说明</button>
+            <button onclick="game.showModal('特效装备鉴赏', '高阶装备与宝物在背包及角色槽中拥有独特的光圈与动态彩虹边框特效，且不显示冗余文字，完美还原经典修仙页游质感。')" class="bg-[var(--bg-card)] border border-[var(--border-gold)] p-2 rounded font-bold cursor-pointer">✨ 特效鉴赏</button>
+            <button onclick="location.reload()" class="bg-red-900 hover:bg-red-800 text-white p-2 rounded font-bold cursor-pointer">🔄 重新加载游戏</button>
+        </div>
+    </div>
+
+    <div class="text-center text-[10px] opacity-60">
+        戰國風雲錄：問道修仙與江湖征戰 © 2026 Strategy Wuxia Engine
+    </div>
+</div>
+
+<!-- Modal Dialog -->
+<div id="customModal" class="modal-overlay hidden">
+    <div class="modal-card text-center">
+        <h3 id="modalTitle" class="text-lg font-bold text-amber-400 mb-2">📜 提示</h3>
+        <p id="modalMessage" class="text-sm mb-4 leading-relaxed whitespace-pre-wrap">内容...</p>
+        <button onclick="game.closeModal()" class="bg-amber-700 hover:bg-amber-600 text-white font-bold px-6 py-2 rounded border border-amber-500 transition cursor-pointer">
+            确认知悉
+        </button>
+    </div>
+</div>
+
+<script>
+    class WuxiaGameEngine {
+        constructor() {
+            this.isDarkTheme = true;
+            this.autoBattle = false;
+            this.battleTimer = null;
+            this.silver = 26703;
+            this.currentDifficulty = 'normal'; // normal, hell, nightmare, godlike
+            this.unlockedBagSlots = 15; // 15 unlocked, 35 locked (total 50)
+            
+            // Player stats
+            this.p1 = { hp: 418, maxHp: 418, mp: 170, maxMp: 170 };
+            this.p2 = { hp: 400, maxHp: 400, mp: 180, maxMp: 180 };
+            this.baseAtk = 185;
+            this.baseDef = 92;
+
+            // Equipped gear slots
+            this.equipped = {
+                weapon: null,
+                armor: null,
+                helm: null,
+                boots: null,
+                amulet1: null,
+                amulet2: null,
+                ring1: null,
+                ring2: null
+            };
+
+            // Inventory items (initial items fit within the 15 unlocked slots)
+            this.inventory = [
+                { id: 1, name: "聚气大丹", type: "丹药", slotType: "consumable", count: 12, rarity: "white", icon: "💊", atkBonus: 0, defBonus: 0, desc: "基础修炼丹药" },
+                { id: 2, name: "青釭宝剑", type: "武器", slotType: "weapon", count: 1, rarity: "blue", icon: "🗡️", atkBonus: 45, defBonus: 10, desc: "锋利无比的战国名剑" },
+                { id: 3, name: "玄铁软甲", type: "防具", slotType: "armor", count: 1, rarity: "purple", icon: "🛡️", atkBonus: 15, defBonus: 60, desc: "紫霞真气加持的坚固重甲" },
+                { id: 4, name: "轩辕神剑", type: "神器", slotType: "weapon", count: 1, rarity: "rainbow", icon: "⚔️", atkBonus: 180, defBonus: 50, desc: "散发绝世彩虹光的上古神兵！" }
+            ];
+
+            // 18 Campaign stages positioned across 6 Warring States regions for the map view
+            this.stages = [
+                { id: 1, name: "渔阳密林", realm: "燕州", enemy1: "海毛虫", enemy2: "树怪", unlocked: true, cleared: false, x: 75, y: 18 },
+                { id: 2, name: "蓟城关隘", realm: "燕州", enemy1: "铁甲卫士", enemy2: "叛军术士", unlocked: false, cleared: false, x: 83, y: 28 },
+                { id: 3, name: "燕王宫殿", realm: "燕州", enemy1: "燕国大将", enemy2: "禁军统领", unlocked: false, cleared: false, x: 91, y: 20 },
+                
+                { id: 4, name: "代郡荒野", realm: "赵州", enemy1: "沙地蝎", enemy2: "石傀儡", unlocked: false, cleared: false, x: 55, y: 25 },
+                { id: 5, name: "邯郸长廊", realm: "赵州", enemy1: "赵国铁骑", enemy2: "飞刀刺客", unlocked: false, cleared: false, x: 62, y: 35 },
+                { id: 6, name: "胡服骑射营", realm: "赵州", enemy1: "廉颇副官", enemy2: "精锐弓手", unlocked: false, cleared: false, x: 68, y: 25 },
+
+                { id: 7, name: "即墨渔村", realm: "齐州", enemy1: "东海鲨怪", enemy2: "海盗头子", unlocked: false, cleared: false, x: 88, y: 45 },
+                { id: 8, name: "稷下学宫", realm: "齐州", enemy1: "叛变学子", enemy2: "机关木人", unlocked: false, cleared: false, x: 92, y: 55 },
+                { id: 9, name: "临淄王城", realm: "齐州", enemy1: "大司马", enemy2: "稷下剑圣", unlocked: false, cleared: false, x: 84, y: 62 },
+
+                { id: 10, name: "大梁渡口", realm: "魏州", enemy1: "河妖", enemy2: "水鬼", unlocked: false, cleared: false, x: 50, y: 48 },
+                { id: 11, name: "武卒大营", realm: "魏州", enemy1: "魏武卒", enemy2: "重甲枪手", unlocked: false, cleared: false, x: 58, y: 58 },
+                { id: 12, name: "魏王宫", realm: "魏州", enemy1: "魏国国相", enemy2: "禁卫军师", unlocked: false, cleared: false, x: 48, y: 65 },
+
+                { id: 13, name: "洞庭泽国", realm: "楚州", enemy1: "云梦巨蟒", enemy2: "泽国水妖", unlocked: false, cleared: false, x: 68, y: 78 },
+                { id: 14, name: "郢都南郊", realm: "楚州", enemy1: "百越战士", enemy2: "巫蛊师", unlocked: false, cleared: false, x: 78, y: 85 },
+                { id: 15, name: "屈原故里", realm: "楚州", enemy1: "楚国令尹", enemy2: "降灵死士", unlocked: false, cleared: false, x: 85, y: 75 },
+
+                { id: 16, name: "函谷险道", realm: "秦州", enemy1: "铁鹰锐士", enemy2: "弩兵什长", unlocked: false, cleared: false, x: 22, y: 40 },
+                { id: 17, name: "咸阳宫门", realm: "秦州", enemy1: "大秦都尉", enemy2: "黑冰台密探", unlocked: false, cleared: false, x: 30, y: 55 },
+                { id: 18, name: "阿房大殿", realm: "秦州", enemy1: "始皇影卫", enemy2: "机关兽", unlocked: false, cleared: false, x: 38, y: 48 }
+            ];
+
+            this.currentStageIndex = 0;
+            this.activeEnemy = { name: "海毛虫", hp: 336, maxHp: 336, mp: 157, maxMp: 157 };
+            this.activeEnemy2 = { name: "树怪", hp: 320, maxHp: 320, mp: 144, maxMp: 144 };
+
+            this.renderStrategicMap();
+            this.renderInventory();
+            this.updateCharacterStats();
+            this.updateCurrencyDisplay();
+        }
+
+        toggleTheme() {
+            this.isDarkTheme = !this.isDarkTheme;
+            document.documentElement.className = this.isDarkTheme ? "theme-dark" : "theme-light";
+        }
+
+        switchTab(tabKey) {
+            ['char', 'bag', 'battle', 'chat', 'menu', 'map'].forEach(t => {
+                const el = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                if(el) el.classList.add('hidden');
+                const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                if(btn) btn.className = "py-1.5 rounded transition bg-[var(--bg-card)] border border-[var(--border-gold)]";
+            });
+            const targetEl = document.getElementById(`tabContent${tabKey.charAt(0).toUpperCase() + tabKey.slice(1)}`);
+            if(targetEl) targetEl.classList.remove('hidden');
+            const targetBtn = document.getElementById(`tabBtn${tabKey.charAt(0).toUpperCase() + tabKey.slice(1)}`);
+            if(targetBtn) targetBtn.className = "py-1.5 rounded transition bg-amber-700 text-white shadow font-bold";
+
+            if(tabKey === 'map') {
+                this.renderStrategicMap();
+            } else if(tabKey === 'char') {
+                this.updateCharacterStats();
+            } else if(tabKey === 'bag') {
+                this.renderInventory();
+            }
+        }
+
+        changeDifficulty(val) {
+            this.currentDifficulty = val;
+            const diffNames = { normal: "普通", hell: "地獄", nightmare: "夢魘", godlike: "神人" };
+            const stage = this.stages[this.currentStageIndex];
+            document.getElementById("currentBattleInfo").textContent = `当前关卡：${stage.name} (${diffNames[val]})`;
+            this.addBattleLog(`⚙️ 切换挑战难度为：【${diffNames[val]}】！高难度下爆率与稀有宝物概率已提升。`);
+        }
+
+        renderStrategicMap() {
+            const wrapper = document.getElementById("mapNodesWrapper");
+            const svgLines = document.getElementById("mapSvgLines");
+            wrapper.innerHTML = "";
+            svgLines.innerHTML = "";
+
+            for (let i = 0; i < this.stages.length - 1; i++) {
+                const s1 = this.stages[i];
+                const s2 = this.stages[i + 1];
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                line.setAttribute("x1", `${s1.x}%`);
+                line.setAttribute("y1", `${s1.y}%`);
+                line.setAttribute("x2", `${s2.x}%`);
+                line.setAttribute("y2", `${s2.y}%`);
+                line.setAttribute("stroke", s1.cleared ? "#c29b61" : "#4a5568");
+                line.setAttribute("stroke-width", "2");
+                line.setAttribute("stroke-dasharray", s1.cleared ? "none" : "4");
+                svgLines.appendChild(line);
+            }
+
+            this.stages.forEach((stage, idx) => {
+                const node = document.createElement("div");
+                node.className = "map-node";
+                node.style.left = `${stage.x}%`;
+                node.style.top = `${stage.y}%`;
+
+                let bgClass = "bg-slate-800 border-slate-600 text-slate-400 opacity-60";
+                let iconSymbol = "🔒";
+
+                if (stage.cleared) {
+                    bgClass = "bg-emerald-950 border-emerald-500 text-emerald-300 shadow-md";
+                    iconSymbol = "✅";
+                } else if (stage.unlocked) {
+                    bgClass = "bg-amber-950 border-amber-500 text-amber-300 shadow-lg animate-pulse";
+                    iconSymbol = "⚔️";
+                }
+
+                node.innerHTML = `
+                    <div class="w-10 h-10 rounded-full border-2 ${bgClass} flex items-center justify-center text-sm font-bold shadow">
+                        ${iconSymbol}
+                    </div>
+                    <span class="text-[10px] font-bold mt-1 bg-black/60 px-1.5 py-0.5 rounded text-amber-200 border border-[var(--border-gold)] whitespace-nowrap">${stage.name}</span>
+                `;
+
+                node.onclick = () => {
+                    if (!stage.unlocked) {
+                        this.showModal("关卡未解锁", `必须依过关顺序推进！请先通关前置据点，方可进军【${stage.realm}・${stage.name}】！`);
+                        return;
+                    }
+                    this.selectStage(idx);
+                };
+
+                wrapper.appendChild(node);
+            });
+        }
+
+        selectStage(idx) {
+            this.currentStageIndex = idx;
+            const stage = this.stages[idx];
+            
+            let diffMultiplier = 1.0;
+            if (this.currentDifficulty === 'hell') diffMultiplier = 1.3;
+            if (this.currentDifficulty === 'nightmare') diffMultiplier = 1.7;
+            if (this.currentDifficulty === 'godlike') diffMultiplier = 2.3;
+
+            const baseHp1 = 300 + idx*25;
+            const baseHp2 = 280 + idx*25;
+
+            this.activeEnemy = { name: stage.enemy1, hp: Math.floor(baseHp1 * diffMultiplier), maxHp: Math.floor(baseHp1 * diffMultiplier), mp: 150, maxMp: 150 };
+            this.activeEnemy2 = { name: stage.enemy2, hp: Math.floor(baseHp2 * diffMultiplier), maxHp: Math.floor(baseHp2 * diffMultiplier), mp: 140, maxMp: 140 };
+
+            document.getElementById("e1Name").textContent = stage.enemy1;
+            document.getElementById("e2Name").textContent = stage.enemy2;
+            this.p1.hp = this.p1.maxHp;
+            this.p2.hp = this.p2.maxHp;
+
+            const diffNames = { normal: "普通", hell: "地獄", nightmare: "夢魘", godlike: "神人" };
+            document.getElementById("currentBattleInfo").textContent = `当前关卡：${stage.name} (${diffNames[this.currentDifficulty]})`;
+
+            this.updateBattleUI();
+            this.switchTab('battle');
+
+            const logBox = document.getElementById("battleLogContainer");
+            logBox.innerHTML = `<div class="text-amber-300 font-bold">【已进军关卡】${stage.realm}：${stage.name} [${diffNames[this.currentDifficulty]}]</div>
+                <div>敌方阵营：<span class="text-red-400">${stage.enemy1}</span> 与 <span class="text-amber-400">${stage.enemy2}</span> 严阵以待！</div>`;
+        }
+
+        startBattle() {
+            if (this.activeEnemy.hp <= 0 && this.activeEnemy2.hp <= 0) {
+                this.addBattleLog(`当前关卡已经通关！请在舆图选择后续关卡或更高难度。`);
+                return;
+            }
+
+            let extraAtk = 0;
+            Object.values(this.equipped).forEach(item => {
+                if (item && item.atkBonus) extraAtk += item.atkBonus;
+            });
+            const totalAtk = this.baseAtk + extraAtk;
+
+            const dmg1 = Math.floor(Math.random() * 35) + Math.floor(totalAtk * 0.25);
+            const dmg2 = Math.floor(Math.random() * 30) + Math.floor(totalAtk * 0.2);
+
+            this.activeEnemy.hp = Math.max(0, this.activeEnemy.hp - dmg1);
+            this.activeEnemy2.hp = Math.max(0, this.activeEnemy2.hp - dmg2);
+
+            this.addBattleLog(`郁悶寒少爷 施展绝技 攻击敌方，造成 <span class="text-red-400 font-bold">${dmg1}</span> 与 <span class="text-red-400 font-bold">${dmg2}</span> 伤害！`);
+
+            if (this.activeEnemy.hp <= 0 && this.activeEnemy2.hp <= 0) {
+                const stage = this.stages[this.currentStageIndex];
+                stage.cleared = true;
+                
+                if (this.currentStageIndex + 1 < this.stages.length) {
+                    this.stages[this.currentStageIndex + 1].unlocked = true;
+                }
+
+                let mult = 1.0;
+                if (this.currentDifficulty === 'hell') mult = 1.5;
+                if (this.currentDifficulty === 'nightmare') mult = 2.2;
+                if (this.currentDifficulty === 'godlike') mult = 3.5;
+
+                const earnedSilver = Math.floor((200 + this.currentStageIndex * 80) * mult);
+                const earnedExp = Math.floor((600 + this.currentStageIndex * 200) * mult);
+                this.silver += earnedSilver;
+                this.updateCurrencyDisplay();
+
+                let droppedItem = this.rollItemDrop(this.currentDifficulty);
+                if (droppedItem) {
+                    if (this.inventory.length < this.unlockedBagSlots) {
+                        this.inventory.unshift(droppedItem);
+                        this.renderInventory();
+                        this.addBattleLog(`<span class="text-yellow-400 font-bold">🌟 战利品掉落：获得【${droppedItem.name}】已收入背包！</span>`);
+                    } else {
+                        this.addBattleLog(`<span class="text-red-400 font-bold">⚠️ 背包已满，【${droppedItem.name}】掉落遗失！请开启更多背包格。</span>`);
+                    }
+                }
+
+                this.addBattleLog(`<span class="text-emerald-400 font-bold">🎉 关卡大捷！经验 +${earnedExp}，银币 +${earnedSilver}</span>`);
+                this.showModal("关卡胜利", `恭喜通关【${stage.name}】(${this.currentDifficulty.toUpperCase()})！\n获得经验 ×${earnedExp}，银币 ×${earnedSilver}。\n${droppedItem ? '获得珍稀宝物：' + droppedItem.name : ''}`);
+            }
+
+            this.updateBattleUI();
+        }
+
+        rollItemDrop(diff) {
+            let rand = Math.random();
+            let chosenRarity = 'white';
+
+            if (diff === 'normal') {
+                if (rand < 0.05) chosenRarity = 'blue';
+                else if (rand < 0.2) chosenRarity = 'green';
+                else chosenRarity = 'white';
+            } else if (diff === 'hell') {
+                if (rand < 0.03) chosenRarity = 'purple';
+                else if (rand < 0.12) chosenRarity = 'blue';
+                else if (rand < 0.4) chosenRarity = 'green';
+                else chosenRarity = 'white';
+            } else if (diff === 'nightmare') {
+                if (rand < 0.02) chosenRarity = 'red';
+                else if (rand < 0.08) chosenRarity = 'purple';
+                else if (rand < 0.25) chosenRarity = 'blue';
+                else chosenRarity = 'green';
+            } else if (diff === 'godlike') {
+                if (rand < 0.01) chosenRarity = 'rainbow';
+                else if (rand < 0.05) chosenRarity = 'platinum';
+                else if (rand < 0.15) chosenRarity = 'yellow';
+                else if (rand < 0.35) chosenRarity = 'red';
+                else chosenRarity = 'purple';
+            }
+
+            const itemPool = {
+                white: [{ name: "粗制铁剑", type: "武器", slot: "weapon", icon: "🗡️", atk: 20, def: 5 }, { name: "布衣", type: "防具", slot: "armor", icon: "🥋", atk: 2, def: 15 }],
+                green: [{ name: "精钢长枪", type: "武器", slot: "weapon", icon: "🔱", atk: 38, def: 8 }, { name: "青铜护心镜", type: "防具", slot: "armor", icon: "🛡️", atk: 5, def: 35 }],
+                blue: [{ name: "湛卢宝剑", type: "武器", slot: "weapon", icon: "⚔️", atk: 65, def: 15 }, { name: "蛟龙软甲", type: "防具", slot: "armor", icon: "🥋", atk: 12, def: 55 }],
+                purple: [{ name: "紫电神鞭", type: "武器", slot: "weapon", icon: "⚡", atk: 98, def: 22 }, { name: "八卦战袍", type: "防具", slot: "armor", icon: "🔮", atk: 25, def: 85 }],
+                red: [{ name: "朱雀烈火杖", type: "武器", slot: "weapon", icon: "🔥", atk: 140, def: 35 }, { name: "赤血战铠", type: "防具", slot: "armor", icon: "🛡️", atk: 40, def: 120 }],
+                yellow: [{ name: "黄金龙胆枪", type: "武器", slot: "weapon", icon: "✨", atk: 195, def: 48 }, { name: "真龙帝王甲", type: "防具", slot: "armor", icon: "👑", atk: 60, def: 160 }],
+                platinum: [{ name: "白金陨铁神剑", type: "神器", slot: "weapon", icon: "🌟", atk: 260, def: 70 }, { name: "九天白金战盔", type: "头盔", slot: "helm", icon: "🪖", atk: 80, def: 90 }],
+                rainbow: [{ name: "混沌盘古开天斧", type: "上古神器", slot: "weapon", icon: "🌈", atk: 350, def: 100 }, { name: "太极鸿蒙彩虹战衣", type: "神圣防具", slot: "armor", icon: "💎", atk: 120, def: 220 }]
+            };
+
+            const pool = itemPool[chosenRarity];
+            const template = pool[Math.floor(Math.random() * pool.length)];
+            return {
+                id: Date.now() + Math.random(),
+                name: template.name,
+                type: template.type,
+                slotType: template.slot,
+                count: 1,
+                rarity: chosenRarity,
+                icon: template.icon,
+                atkBonus: template.atk,
+                defBonus: template.def,
+                desc: `战国传世珍宝`
+            };
+        }
+
+        equipItem(itemId) {
+            const index = this.inventory.findIndex(i => i.id === itemId);
+            if (index === -1) return;
+            const item = this.inventory[index];
+
+            if (item.slotType === 'consumable') {
+                this.showModal("使用灵药", `服用了【${item.name}】，真气运转，修为大进！`);
+                item.count--;
+                if (item.count <= 0) this.inventory.splice(index, 1);
+                this.renderInventory();
+                return;
+            }
+
+            let targetSlot = item.slotType;
+            if (targetSlot === 'amulet') {
+                targetSlot = this.equipped.amulet1 ? 'amulet2' : 'amulet1';
+            } else if (targetSlot === 'ring') {
+                targetSlot = this.equipped.ring1 ? 'ring2' : 'ring1';
+            }
+
+            const currentEquipped = this.equipped[targetSlot];
+            if (currentEquipped) {
+                if (this.inventory.length >= this.unlockedBagSlots) {
+                    this.showModal("背包已满", "背包空间不足，无法卸下当前装备！");
+                    return;
+                }
+                this.inventory.push(currentEquipped);
+            }
+
+            this.equipped[targetSlot] = item;
+            this.inventory.splice(index, 1);
+
+            this.renderInventory();
+            this.updateCharacterStats();
+            this.renderEquipmentSlots();
+            this.addBattleLog(`⚔️ 装备了【${item.name}】！`);
+        }
+
+        unequipSlot(slotName) {
+            const item = this.equipped[slotName];
+            if (!item) return;
+
+            if (this.inventory.length >= this.unlockedBagSlots) {
+                this.showModal("背包已满", "背包空间已满，无法卸下装备！");
+                return;
+            }
+
+            this.inventory.push(item);
+            this.equipped[slotName] = null;
+
+            this.renderInventory();
+            this.updateCharacterStats();
+            this.renderEquipmentSlots();
+            this.addBattleLog(`🛡️ 卸下了【${item.name}】。`);
+        }
+
+        unlockBagSlot() {
+            if (this.unlockedBagSlots >= 50) {
+                this.showModal("行囊已全开", "您的背包已全部解锁至50格！");
+                return;
+            }
+            const cost = (this.unlockedBagSlots - 14) * 1000;
+            if (this.silver < cost) {
+                this.showModal("银币不足", `开启第 ${this.unlockedBagSlots + 1} 格需要消耗 ${cost} 银币！`);
+                return;
+            }
+            this.silver -= cost;
+            this.unlockedBagSlots += 5;
+            if (this.unlockedBagSlots > 50) this.unlockedBagSlots = 50;
+            this.updateCurrencyDisplay();
+            this.renderInventory();
+            this.showModal("解锁成功", `行囊已成功扩容！当前已解锁 ${this.unlockedBagSlots} 格。`);
+        }
+
+        renderInventory() {
+            const container = document.getElementById("inventoryContainer");
+            container.innerHTML = "";
+
+            // Total 50 slots
+            for (let i = 0; i < 50; i++) {
+                const slotDiv = document.createElement("div");
+                
+                if (i < this.unlockedBagSlots) {
+                    const item = this.inventory[i];
+                    if (item) {
+                        let rarityClass = "rarity-white border-slate-600";
+                        if (item.rarity === 'green') rarityClass = "rarity-green border-green-500";
+                        if (item.rarity === 'blue') rarityClass = "rarity-blue border-blue-500";
+                        if (item.rarity === 'purple') rarityClass = "rarity-purple border-purple-500";
+                        if (item.rarity === 'red') rarityClass = "rarity-red border-red-500";
+                        if (item.rarity === 'yellow') rarityClass = "rarity-yellow border-yellow-500";
+                        if (item.rarity === 'platinum') rarityClass = "rarity-platinum border-slate-200";
+                        if (item.rarity === 'rainbow') rarityClass = "rarity-rainbow";
+
+                        slotDiv.className = `aspect-square rounded-lg border-2 ${rarityClass} flex flex-col justify-center items-center text-center shadow transition hover:scale-105 bg-[var(--bg-card)] cursor-pointer relative`;
+                        slotDiv.onclick = () => this.equipItem(item.id);
+                        slotDiv.innerHTML = `
+                            <div class="text-xl">${item.icon}</div>
+                            <div class="absolute bottom-0.5 right-1 text-[9px] font-bold text-amber-200 bg-black/60 px-1 rounded">x${item.count}</div>
+                        `;
+                    } else {
+                        slotDiv.className = "aspect-square rounded-lg border border-[var(--border-gold)]/40 bg-[var(--bg-main)] flex items-center justify-center text-[10px] opacity-30";
+                        slotDiv.innerHTML = `${i + 1}`;
+                    }
+                } else {
+                    // Locked slots
+                    slotDiv.className = "aspect-square rounded-lg border border-dashed border-red-900/60 bg-black/40 flex flex-col items-center justify-center text-[10px] cursor-pointer hover:border-red-500 transition text-red-400";
+                    slotDiv.innerHTML = `🔒`;
+                    slotDiv.title = "点击消耗银币解锁此格";
+                    slotDiv.onclick = () => this.unlockBagSlot();
+                }
+                container.appendChild(slotDiv);
+            }
+            document.getElementById("bagBadge").textContent = this.inventory.length;
+        }
+
+        renderEquipmentSlots() {
+            const slots = ['weapon', 'armor', 'helm', 'boots', 'amulet1', 'amulet2', 'ring1', 'ring2'];
+            slots.forEach(slot => {
+                const slotEl = document.getElementById(`eqSlot_${slot}`);
+                const item = this.equipped[slot];
+                if (slotEl) {
+                    if (item) {
+                        slotEl.innerHTML = `<span class="text-2xl">${item.icon}</span>`;
+                        slotEl.className = `w-12 h-12 rounded-lg flex items-center justify-center text-xl cursor-pointer shadow transition hover:scale-105 ${this.getRarityClass(item.rarity)}`;
+                    } else {
+                        let defaultIcon = "💍";
+                        if (slot === 'helm') defaultIcon = "🪖";
+                        if (slot === 'weapon') defaultIcon = "⚔️";
+                        if (slot === 'armor') defaultIcon = "🛡️";
+                        if (slot === 'boots') defaultIcon = "👢";
+                        if (slot === 'amulet2') defaultIcon = "📿";
+                        slotEl.innerHTML = `<span class="opacity-40 text-xl">${defaultIcon}</span>`;
+                        slotEl.className = "w-12 h-12 bg-[var(--bg-main)] border-2 border-dashed border-[var(--border-gold)] rounded-lg flex items-center justify-center text-xl cursor-pointer hover:border-amber-400 transition shadow";
+                    }
+                }
+            });
+        }
+
+        getRarityClass(rarity) {
+            if (rarity === 'green') return 'rarity-green border-green-500 bg-[var(--bg-main)]';
+            if (rarity === 'blue') return 'rarity-blue border-blue-500 bg-[var(--bg-main)]';
+            if (rarity === 'purple') return 'rarity-purple border-purple-500 bg-[var(--bg-main)]';
+            if (rarity === 'red') return 'rarity-red border-red-500 bg-[var(--bg-main)]';
+            if (rarity === 'yellow') return 'rarity-yellow border-yellow-500 bg-[var(--bg-main)]';
+            if (rarity === 'platinum') return 'rarity-platinum bg-[var(--bg-main)]';
+            if (rarity === 'rainbow') return 'rarity-rainbow bg-[var(--bg-main)]';
+            return 'rarity-white border-slate-500 bg-[var(--bg-main)]';
+        }
+
+        updateCharacterStats() {
+            let extraAtk = 0;
+            let extraDef = 0;
+
+            Object.values(this.equipped).forEach(item => {
+                if (item) {
+                    if (item.atkBonus) extraAtk += item.atkBonus;
+                    if (item.defBonus) extraDef += item.defBonus;
+                }
+            });
+
+            const totalAtk = this.baseAtk + extraAtk;
+            const totalDef = this.baseDef + extraDef;
+
+            const atkEl = document.getElementById("charAtk");
+            const defEl = document.getElementById("charDef");
+            if (atkEl) atkEl.textContent = totalAtk;
+            if (defEl) defEl.textContent = totalDef;
+
+            this.renderEquipmentSlots();
+        }
+
+        toggleAutoBattle() {
+            const chk = document.getElementById("autoBattleToggle").checked;
+            this.autoBattle = chk;
+            if (this.autoBattle) {
+                this.battleTimer = setInterval(() => {
+                    if (this.activeEnemy.hp > 0 || this.activeEnemy2.hp > 0) {
+                        this.startBattle();
+                    } else {
+                        clearInterval(this.battleTimer);
+                        document.getElementById("autoBattleToggle").checked = false;
+                        this.autoBattle = false;
+                    }
+                }, 1200);
+                this.addBattleLog(`⚡ 自动挂机战斗已开启...`);
+            } else {
+                clearInterval(this.battleTimer);
+                this.addBattleLog(`🛑 自动战斗已关闭。`);
+            }
+        }
+
+        updateBattleUI() {
+            document.getElementById("p1Hp").textContent = `${this.p1.hp}/${this.p1.maxHp}`;
+            document.getElementById("p1HpBar").style.width = `${(this.p1.hp / this.p1.maxHp) * 100}%`;
+            document.getElementById("p2Hp").textContent = `${this.p2.hp}/${this.p2.maxHp}`;
+            document.getElementById("p2HpBar").style.width = `${(this.p2.hp / this.p2.maxHp) * 100}%`;
+
+            document.getElementById("e1Hp").textContent = `${this.activeEnemy.hp}/${this.activeEnemy.maxHp}`;
+            document.getElementById("e1HpBar").style.width = `${(this.activeEnemy.hp / this.activeEnemy.maxHp) * 100}%`;
+            document.getElementById("e2Hp").textContent = `${this.activeEnemy2.hp}/${this.activeEnemy2.maxHp}`;
+            document.getElementById("e2HpBar").style.width = `${(this.activeEnemy2.hp / this.activeEnemy2.maxHp) * 100}%`;
+        }
+
+        updateCurrencyDisplay() {
+            const formatted = this.silver.toLocaleString();
+            document.getElementById("silverDisplay").textContent = formatted;
+        }
+
+        addBattleLog(msg) {
+            const box = document.getElementById("battleLogContainer");
+            const div = document.createElement("div");
+            const count = box.children.length + 1;
+            div.innerHTML = `${count}. ${msg}`;
+            box.insertBefore(div, box.firstChild);
+            if(box.children.length > 35) box.removeChild(box.lastChild);
+        }
+
+        showModal(title, msg) {
+            document.getElementById("modalTitle").textContent = title;
+            document.getElementById("modalMessage").textContent = msg;
+            document.getElementById("customModal").classList.remove("hidden");
+        }
+
+        closeModal() {
+            document.getElementById("customModal").classList.add("hidden");
+        }
+    }
+
+    let game;
+    window.onload = function() {
+        game = new WuxiaGameEngine();
+    };
+</script>
+</body>
+</html>
