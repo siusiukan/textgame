@@ -123,12 +123,12 @@
             display: block;
         }
 
-        /* ===== 地圖樣式 ===== */
+        /* ===== 地圖與純向量城池圖示 ===== */
         .map-top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             background: rgba(0, 0, 0, 0.3);
             padding: 6px 10px;
             border-radius: 6px;
@@ -140,10 +140,9 @@
         .difficulty-select-bar {
             display: flex;
             gap: 4px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             overflow-x: auto;
             padding-bottom: 4px;
-            flex-wrap: wrap;
         }
         .diff-btn {
             padding: 4px 8px;
@@ -191,9 +190,9 @@
 
         .map-node {
             position: absolute;
-            width: 60px;
-            height: 60px;
-            background: #1a2234;
+            width: 62px;
+            height: 62px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
             border: 2px solid #475569;
             border-radius: 10px;
             display: flex;
@@ -204,7 +203,7 @@
             transform: translate(-50%, -50%);
             transition: all 0.2s;
             z-index: 2;
-            overflow: hidden;
+            overflow: visible;
         }
         .map-node:hover {
             transform: translate(-50%, -50%) scale(1.15);
@@ -222,24 +221,78 @@
             box-shadow: 0 0 16px rgba(212, 175, 55, 0.9);
         }
         .map-node.locked {
-            opacity: 0.4;
+            opacity: 0.6;
             cursor: not-allowed;
         }
 
-        /* 建築素材剪裁精靈 - 請確保圖片檔名正確，這裡以你上傳的檔名為主，或使用 Base64 */
-        .castle-sprite {
-            width: 100%;
-            height: 100%;
-            background-image: url('image_e1b3ea.png'); /* 指向當前上傳的圖片 */
-            background-size: 500px 500px; 
-            background-repeat: no-repeat;
-            border-radius: 6px;
+        /* 純向量精緻宮殿插圖 */
+        .castle-vector {
+            width: 38px;
+            height: 38px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            position: relative;
         }
-        .style-type-0 { background-position: -10px -10px; }
-        .style-type-1 { background-position: -190px -10px; }
-        .style-type-2 { background-position: -10px -180px; }
-        .style-type-3 { background-position: -370px -230px; }
-        .style-type-4 { background-position: -170px -380px; }
+        .roof-top {
+            width: 24px;
+            height: 6px;
+            background: #dc2626;
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
+            border-bottom: 1px solid #b91c1c;
+            position: relative;
+        }
+        .roof-top::before, .roof-top::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 4px;
+            height: 6px;
+            background: #b91c1c;
+        }
+        .roof-top::before { left: -4px; transform: skewX(-20deg); }
+        .roof-top::after { right: -4px; transform: skewX(20deg); }
+
+        .roof-main {
+            width: 36px;
+            height: 9px;
+            background: #b91c1c;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            border-bottom: 1px solid #7f1d1d;
+            position: relative;
+        }
+        .roof-main::before, .roof-main::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 6px;
+            height: 9px;
+            background: #991b1b;
+        }
+        .roof-main::before { left: -5px; transform: skewX(-25deg); }
+        .roof-main::after { right: -5px; transform: skewX(25deg); }
+
+        .building-body {
+            width: 30px;
+            height: 16px;
+            background: #78350f;
+            border-top: 1px solid #d4af37;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .building-door {
+            width: 8px;
+            height: 12px;
+            background: #1e1b4b;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            border: 1px solid #d4af37;
+        }
 
         .lock-overlay {
             position: absolute;
@@ -247,16 +300,18 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.65);
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 18px;
+            font-size: 16px;
+            border-radius: 8px;
+            z-index: 4;
         }
 
         .map-node .node-name {
             position: absolute;
-            bottom: -20px;
+            bottom: -22px;
             font-size: 10px;
             color: var(--text-gold);
             white-space: nowrap;
@@ -267,7 +322,7 @@
             z-index: 5;
         }
 
-        /* 其他介面樣式 */
+        /* 角色與其他介面樣式 */
         .char-panel-wrapper { display: flex; flex-direction: column; align-items: center; gap: 12px; padding-bottom: 10px; }
         .equipment-circle-layout { display: flex; flex-direction: column; align-items: center; gap: 10px; background: rgba(0, 0, 0, 0.3); padding: 14px 10px; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.3); width: 100%; }
         .eq-row { display: flex; justify-content: center; gap: 8px; width: 100%; }
@@ -278,9 +333,11 @@
         .char-center-avatar { width: 90px; height: 110px; background: #161e31; border: 2px solid var(--panel-border); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
         .avatar-img { font-size: 36px; margin-bottom: 4px; }
         .avatar-title { font-size: 10px; color: var(--text-gold); font-weight: bold; background: #090d16; width: 100%; text-align: center; padding: 2px 0; border-top: 1px solid var(--panel-border); }
+        
         .char-stats-summary { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--panel-border); border-radius: 8px; padding: 10px; width: 100%; text-align: center; }
         .char-stats-summary h3 { color: var(--text-gold); margin-bottom: 4px; font-size: 14px; }
-        .char-stats-summary p { font-size: 13px; color: #cbd5e1; margin: 2px 0; }
+        .char-stats-summary p { font-size: 13px; color: #cbd5e1; margin: 3px 0; }
+
         .suit-switch-section { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; }
         .suit-title { font-size: 12px; color: var(--text-gold); }
         .suit-btns { display: flex; gap: 6px; }
@@ -350,16 +407,16 @@
 
         <!-- Navigation Tabs -->
         <div class="nav-tabs">
-            <div class="nav-tab" onclick="switchTab('char', event)">角色</div>
+            <div class="nav-tab active" onclick="switchTab('char', event)">角色</div>
             <div class="nav-tab" onclick="switchTab('backpack', event)">背包</div>
-            <div class="nav-tab active" onclick="switchTab('map', event)">輿圖關卡</div>
+            <div class="nav-tab" onclick="switchTab('map', event)">輿圖關卡</div>
             <div class="nav-tab" onclick="switchTab('battle', event)">戰鬥</div>
             <div class="nav-tab" onclick="switchTab('chat', event)">聊天</div>
             <div class="nav-tab" onclick="switchTab('menu', event)">選單</div>
         </div>
 
         <!-- 1. Character Tab -->
-        <div id="tab-char" class="content-area">
+        <div id="tab-char" class="content-area active">
             <div class="char-panel-wrapper">
                 <div class="equipment-circle-layout">
                     <div class="eq-row">
@@ -390,7 +447,7 @@
                     <h3 id="summaryName">郁悶寒少爺</h3>
                     <p id="summaryRealm">初窺門徑 · Lv.1</p>
                     <p>攻擊: <span id="statAtk">10</span> | 防禦: <span id="statDef">5</span></p>
-                    <p>經驗值: <span id="statExp">0</span> / <span id="statMaxExp">100</span></p>
+                    <p>當前經驗: <span id="statExp">0</span> / 升級所需: <span id="statMaxExp">100</span></p>
                 </div>
 
                 <div class="suit-switch-section">
@@ -418,11 +475,14 @@
             <div class="backpack-grid" id="backpackGrid"></div>
         </div>
 
-        <!-- 3. Map Tab - 平線與真實素材城池地圖 (100關) -->
-        <div id="tab-map" class="content-area active">
+        <!-- 3. Map Tab - 100關與純向量完美城池地圖 -->
+        <div id="tab-map" class="content-area">
             <div class="map-top-bar">
                 <span id="currentMapTitle">🏯 九州戰國 · 宮殿戰略輿圖 (第 1 關 / 100)</span>
                 <button class="sub-action-btn" onclick="jumpToCurrentBattle()">⚔️ 前往戰鬥</button>
+            </div>
+            <div style="font-size:11px; color:#22c55e; margin-bottom:6px; background:rgba(34,197,94,0.1); padding:4px 8px; border-radius:4px; border:1px solid rgba(34,197,94,0.3);">
+                🔥 <b>新手福利</b>：第 1 ~ 20 關經驗值獲得提升 70%！
             </div>
             <div class="difficulty-select-bar">
                 <button class="diff-btn active" onclick="selectDifficulty('normal', event)">普通關卡</button>
@@ -607,6 +667,19 @@
             }
         }
 
+        function checkLevelUp() {
+            while (game.exp >= game.maxExp) {
+                game.exp -= game.maxExp;
+                game.level++;
+                game.maxExp = Math.floor(game.maxExp * 1.5);
+                game.maxHp += 10;
+                game.hp = game.maxHp;
+                game.atk += 3;
+                game.def += 2;
+                showModal("恭喜升級！", `角色已提升至 <span style="color:var(--text-gold);">Lv.${game.level}</span>！各項能力大幅增長！`);
+            }
+        }
+
         function renderBackpack() {
             const grid = document.getElementById('backpackGrid');
             grid.innerHTML = '';
@@ -734,11 +807,13 @@
                 card.style.left = node.x + 'px';
                 card.style.top = node.y + 'px';
 
-                let styleIdx = node.id % 5;
-                
                 if (isUnlocked) {
                     card.innerHTML = `
-                        <div class="castle-sprite style-type-${styleIdx}"></div>
+                        <div class="castle-vector">
+                            <div class="roof-top"></div>
+                            <div class="roof-main"></div>
+                            <div class="building-body"><div class="building-door"></div></div>
+                        </div>
                         <span class="node-name">${node.name}</span>
                     `;
                     let sNum = node.id;
@@ -748,9 +823,12 @@
                         updateBattleUI();
                     };
                 } else {
-                    // 未解鎖也顯示建築，但帶有半透明與鎖頭，避免畫面空白
                     card.innerHTML = `
-                        <div class="castle-sprite style-type-${styleIdx}" style="filter: brightness(0.4);"></div>
+                        <div class="castle-vector" style="filter: brightness(0.3);">
+                            <div class="roof-top"></div>
+                            <div class="roof-main"></div>
+                            <div class="building-body"><div class="building-door"></div></div>
+                        </div>
                         <div class="lock-overlay">🔒</div>
                         <span class="node-name">${node.name}</span>
                     `;
@@ -857,12 +935,19 @@
             document.getElementById('battleActionBtn').classList.remove('active-battle');
 
             let stageNum = game.currentStage[game.difficulty];
-            let expGain = 40 + stageNum * 12;
+            
+            // 第 1~20 關經驗提升 70%
+            let baseExp = 40 + stageNum * 12;
+            let expGain = (stageNum <= 20) ? Math.floor(baseExp * 1.7) : baseExp;
+            
             let silverGain = 30 + stageNum * 8;
             game.exp += expGain;
             game.silver += silverGain;
 
-            addBattleLog(`🎉 勝利！經驗 +${expGain}，銀幣 +${silverGain}`);
+            let expBonusText = (stageNum <= 20) ? " (新手+70%)" : "";
+            addBattleLog(`🎉 勝利！經驗 +${expGain}${expBonusText}，銀幣 +${silverGain}`);
+
+            checkLevelUp();
 
             if (stageNum === game.maxUnlockedStage[game.difficulty] && stageNum < 100) {
                 game.maxUnlockedStage[game.difficulty]++;
