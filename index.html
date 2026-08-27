@@ -1,958 +1,932 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="theme-dark">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>戰國風雲錄：問道修仙與江湖征戰</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>戰國風雲錄 · 精緻城池地圖</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
-
         :root {
-            --bg-main: #141824;
-            --bg-card: #1e2538;
-            --border-gold: #c29b61;
-            --text-main: #e2d4c0;
-            --text-gold: #d4af37;
+            --bg-color: #0b0f19;
+            --panel-bg: #131b2e;
+            --panel-border: #d4af37;
+            --text-gold: #f3e5ab;
+            --text-main: #e2e8f0;
         }
-
-        .theme-light {
-            --bg-main: #f0ede6;
-            --bg-card: #e4dfd3;
-            --border-gold: #8c6732;
-            --text-main: #2c241d;
-            --text-gold: #8c6732;
-        }
-
         * {
             box-sizing: border-box;
-            font-family: 'Noto Serif SC', serif;
-            user-select: none;
-        }
-
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            min-height: 100vh;
             margin: 0;
-            padding: 6px;
+            padding: 0;
+            font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: background 0.3s, color 0.3s;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 10px;
         }
-
-        .game-shell {
-            max-width: 1200px;
+        .game-container {
             width: 100%;
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 12px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 0 2px var(--border-gold) inset;
-            border: 2px solid var(--border-gold);
+            max-width: 480px;
+            height: 100vh;
+            max-height: 920px;
+            background: var(--panel-bg);
+            border: 2px solid var(--panel-border);
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            position: relative;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
         }
 
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 10px; }
-
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(4px);
-            z-index: 50;
+        .top-header {
+            background: #090d16;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--panel-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+        .player-info-top {
             display: flex;
             align-items: center;
-            justify-content: center;
-            padding: 1rem;
+            gap: 8px;
         }
-        .modal-card {
-            background: var(--bg-card);
-            border: 2px solid var(--border-gold);
-            border-radius: 12px;
-            max-width: 450px;
-            width: 100%;
-            padding: 20px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.7);
-            color: var(--text-main);
+        .player-name {
+            color: var(--text-gold);
+            font-weight: bold;
+            font-size: 14px;
         }
-        .hidden { display: none !important; }
+        .player-level {
+            background: #2d1e0c;
+            border: 1px solid var(--panel-border);
+            color: var(--text-gold);
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        .currency-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: var(--text-gold);
+        }
+        .currency-item {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
 
-        .map-container {
+        .nav-tabs {
+            display: flex;
+            background: #0f172a;
+            border-bottom: 2px solid var(--panel-border);
+            flex-shrink: 0;
+        }
+        .nav-tab {
+            flex: 1;
+            padding: 8px 0;
+            text-align: center;
+            color: var(--text-main);
+            font-size: 12px;
+            cursor: pointer;
+            border-right: 1px solid #1e293b;
+            transition: all 0.2s;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .nav-tab:hover {
+            background: rgba(212, 175, 55, 0.1);
+            color: var(--text-gold);
+        }
+        .nav-tab.active {
+            background: #b45309;
+            color: #fff;
+            font-weight: bold;
+            border-bottom: 2px solid var(--text-gold);
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
             position: relative;
-            background: radial-gradient(circle, #1a2236 0%, #0d111a 100%);
-            border: 2px solid #52422c;
+            display: none;
+        }
+        .content-area.active {
+            display: block;
+        }
+
+        /* ===== 地圖樣式 ===== */
+        .map-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--panel-border);
+            font-size: 11px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .difficulty-select-bar {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 10px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            flex-wrap: wrap;
+        }
+        .diff-btn {
+            padding: 4px 8px;
+            background: #1e293b;
+            border: 1px solid #475569;
+            color: #cbd5e1;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .diff-btn.active {
+            background: #b45309;
+            border-color: var(--text-gold);
+            color: #fff;
+            font-weight: bold;
+        }
+        .diff-btn.locked-diff {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .node-map-container {
+            position: relative;
+            width: 100%;
+            height: 440px;
+            background: #090d16;
+            border: 1px solid #334155;
             border-radius: 8px;
             overflow: auto;
-            height: 480px;
-            padding: 16px;
+        }
+        .node-map-canvas {
+            position: relative;
+            width: 6200px;
+            height: 420px;
+        }
+        .map-svg-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
         }
 
         .map-node {
             position: absolute;
-            transform: translate(-50%, -50%);
-            cursor: pointer;
-            transition: all 0.2s;
+            width: 60px;
+            height: 60px;
+            background: #1a2234;
+            border: 2px solid #475569;
+            border-radius: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transform: translate(-50%, -50%);
+            transition: all 0.2s;
+            z-index: 2;
+            overflow: hidden;
         }
         .map-node:hover {
             transform: translate(-50%, -50%) scale(1.15);
+            border-color: var(--text-gold);
             z-index: 10;
         }
-
-        /* Rarity Borders without text labels */
-        .rarity-white { border: 2px solid #9ca3af; background: rgba(156,163,175,0.05); }
-        .rarity-green { border: 2px solid #22c55e; background: rgba(34,197,94,0.08); box-shadow: 0 0 8px rgba(34,197,94,0.3); }
-        .rarity-blue { border: 2px solid #3b82f6; background: rgba(59,130,246,0.08); box-shadow: 0 0 10px rgba(59,130,246,0.35); }
-        .rarity-purple { border: 2px solid #a855f7; background: rgba(168,85,247,0.08); box-shadow: 0 0 12px rgba(168,85,247,0.4); }
-        .rarity-red { border: 2px solid #ef4444; background: rgba(239,68,68,0.08); box-shadow: 0 0 14px rgba(239,68,68,0.5); }
-        .rarity-yellow { border: 2px solid #eab308; background: rgba(234,179,8,0.08); box-shadow: 0 0 16px rgba(234,179,8,0.6); }
-        .rarity-platinum {
-            border: 2px solid #f8fafc;
-            background: linear-gradient(135deg, rgba(248,250,252,0.15), rgba(148,163,184,0.25));
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(255,255,255,0.4);
+        .map-node.unlocked {
+            border-color: #3b82f6;
         }
-        .rarity-rainbow {
-            border: 2px solid transparent;
-            background: linear-gradient(var(--bg-card), var(--bg-card)) padding-box,
-                        linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet) border-box;
-            animation: rainbowBorder 3s linear infinite;
-            box-shadow: 0 0 25px rgba(236, 72, 153, 0.8), 0 0 12px rgba(59, 130, 246, 0.8);
+        .map-node.cleared {
+            border-color: #22c55e;
+        }
+        .map-node.current {
+            border-color: var(--text-gold);
+            box-shadow: 0 0 16px rgba(212, 175, 55, 0.9);
+        }
+        .map-node.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
         }
 
-        @keyframes rainbowBorder {
-            0% { filter: hue-rotate(0deg); }
-            100% { filter: hue-rotate(360deg); }
+        /* 建築素材剪裁精靈 - 請確保圖片檔名正確，這裡以你上傳的檔名為主，或使用 Base64 */
+        .castle-sprite {
+            width: 100%;
+            height: 100%;
+            background-image: url('image_e1b3ea.png'); /* 指向當前上傳的圖片 */
+            background-size: 500px 500px; 
+            background-repeat: no-repeat;
+            border-radius: 6px;
         }
+        .style-type-0 { background-position: -10px -10px; }
+        .style-type-1 { background-position: -190px -10px; }
+        .style-type-2 { background-position: -10px -180px; }
+        .style-type-3 { background-position: -370px -230px; }
+        .style-type-4 { background-position: -170px -380px; }
+
+        .lock-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+        }
+
+        .map-node .node-name {
+            position: absolute;
+            bottom: -20px;
+            font-size: 10px;
+            color: var(--text-gold);
+            white-space: nowrap;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 1px 5px;
+            border-radius: 3px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            z-index: 5;
+        }
+
+        /* 其他介面樣式 */
+        .char-panel-wrapper { display: flex; flex-direction: column; align-items: center; gap: 12px; padding-bottom: 10px; }
+        .equipment-circle-layout { display: flex; flex-direction: column; align-items: center; gap: 10px; background: rgba(0, 0, 0, 0.3); padding: 14px 10px; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.3); width: 100%; }
+        .eq-row { display: flex; justify-content: center; gap: 8px; width: 100%; }
+        .eq-middle-row { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0 4px; }
+        .slot { width: 44px; height: 44px; background: #1a2234; border: 2px dashed #475569; border-radius: 8px; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; font-size: 18px; }
+        .slot.filled { border-style: solid; border-color: var(--panel-border); }
+        .slot-label { font-size: 8px; color: #94a3b8; position: absolute; bottom: -12px; width: 100%; text-align: center; white-space: nowrap; }
+        .char-center-avatar { width: 90px; height: 110px; background: #161e31; border: 2px solid var(--panel-border); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .avatar-img { font-size: 36px; margin-bottom: 4px; }
+        .avatar-title { font-size: 10px; color: var(--text-gold); font-weight: bold; background: #090d16; width: 100%; text-align: center; padding: 2px 0; border-top: 1px solid var(--panel-border); }
+        .char-stats-summary { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--panel-border); border-radius: 8px; padding: 10px; width: 100%; text-align: center; }
+        .char-stats-summary h3 { color: var(--text-gold); margin-bottom: 4px; font-size: 14px; }
+        .char-stats-summary p { font-size: 13px; color: #cbd5e1; margin: 2px 0; }
+        .suit-switch-section { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; }
+        .suit-title { font-size: 12px; color: var(--text-gold); }
+        .suit-btns { display: flex; gap: 6px; }
+        .suit-btn { width: 32px; height: 32px; background: #1e293b; border: 1px solid var(--panel-border); color: var(--text-gold); border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .extra-suit-actions { display: flex; gap: 8px; margin-top: 4px; }
+        .sub-action-btn { padding: 4px 12px; background: #334155; border: 1px solid var(--panel-border); color: var(--text-gold); border-radius: 4px; cursor: pointer; font-size: 12px; }
+
+        .backpack-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 12px; color: var(--text-gold); flex-wrap: wrap; gap: 6px; }
+        .backpack-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; max-height: 380px; overflow-y: auto; }
+        .bp-slot { aspect-ratio: 1; background: #1a2234; border: 2px solid #334155; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; cursor: pointer; font-size: 16px; min-height: 40px; }
+        .bp-slot.locked { background: #0f141d; border-color: #1e293b; color: #475569; cursor: not-allowed; }
+        .bp-slot.rarity-white { border-color: #cbd5e1; }
+        .bp-slot.rarity-green { border-color: #22c55e; }
+        .bp-slot.rarity-blue { border-color: #3b82f6; }
+        .item-count { position: absolute; bottom: 1px; right: 3px; font-size: 8px; color: #fff; background: rgba(0, 0, 0, 0.7); padding: 0 3px; border-radius: 3px; }
+
+        .battle-top-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; background: rgba(0, 0, 0, 0.3); padding: 8px; border-radius: 6px; border: 1px solid var(--panel-border); }
+        .battle-btn { padding: 6px 14px; background: #4f46e5; color: #fff; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px; }
+        .battle-btn.active-battle { background: #dc2626; }
+        .auto-battle-label { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-gold); cursor: pointer; }
+        .combatant-card { background: #161e31; border: 1px solid var(--panel-border); border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+        .combatant-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .combatant-name { color: var(--text-gold); font-weight: bold; font-size: 14px; }
+        .bar-container { margin-bottom: 5px; }
+        .bar-label-row { display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; margin-bottom: 1px; }
+        .bar-track { width: 100%; height: 8px; background: #0f141d; border-radius: 5px; overflow: hidden; border: 1px solid #334155; }
+        .bar-fill-hp { height: 100%; background: #ef4444; width: 100%; transition: width 0.3s; }
+        .bar-fill-mp { height: 100%; background: #3b82f6; width: 100%; transition: width 0.3s; }
+        .battle-log-box { background: #090d16; border: 1px solid #334155; border-radius: 6px; height: 130px; overflow-y: auto; padding: 6px 8px; font-size: 11px; color: #cbd5e1; font-family: monospace; display: flex; flex-direction: column; gap: 2px; }
+
+        .chat-box { height: 300px; background: #090d16; border: 1px solid #334155; border-radius: 6px; padding: 8px; overflow-y: auto; margin-bottom: 8px; font-size: 12px; display: flex; flex-direction: column; gap: 4px; }
+        .chat-input-row { display: flex; gap: 6px; }
+        .chat-input { flex: 1; background: #1a2234; border: 1px solid #475569; color: #fff; padding: 6px 8px; border-radius: 4px; font-size: 12px; }
+        .chat-send-btn { padding: 6px 14px; background: #b45309; border: none; color: #fff; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+
+        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .menu-card { background: #161e31; border: 1px solid var(--panel-border); border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .menu-card:hover { background: #26334d; border-color: #fff; }
+        .menu-card h4 { color: var(--text-gold); margin-bottom: 4px; font-size: 14px; }
+        .menu-card p { font-size: 11px; color: #94a3b8; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-box { background: #161e31; border: 2px solid var(--panel-border); border-radius: 10px; width: 90%; max-width: 340px; padding: 18px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
+        .modal-title { color: var(--text-gold); font-size: 15px; font-weight: bold; margin-bottom: 10px; text-align: center; }
+        .modal-content { font-size: 13px; color: #cbd5e1; margin-bottom: 16px; text-align: center; line-height: 1.5; }
+        .modal-btns { display: flex; justify-content: center; gap: 10px; }
+        .modal-btn { padding: 5px 14px; background: #b45309; color: #fff; border: 1px solid var(--text-gold); border-radius: 4px; cursor: pointer; font-weight: bold; }
+
+        ::-webkit-scrollbar { width: 3px; height: 3px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #c29b61; border-radius: 4px; }
     </style>
 </head>
-<body class="overflow-x-hidden">
-
-<div class="game-shell">
-    
-    <!-- Top Header Bar -->
-    <div class="flex flex-wrap items-center justify-between bg-[var(--bg-main)] px-3 py-2 rounded-lg border border-[var(--border-gold)] text-xs shadow-sm gap-2">
-        <div class="flex items-center gap-2">
-            <span class="font-bold text-amber-400 text-sm" id="headerCharName">郁悶寒少爷</span>
-            <span class="bg-amber-950 text-amber-300 px-2 py-0.5 rounded text-[10px] border border-amber-700" id="headerLevel">Lv.27级</span>
-        </div>
-        <div class="flex items-center gap-4 font-medium">
-            <div class="flex items-center gap-1">
-                <span>🪙</span> <span id="silverDisplay" class="font-bold text-slate-200">2,6703</span>
+<body>
+    <div class="game-container">
+        <!-- Top Header -->
+        <div class="top-header">
+            <div class="player-info-top">
+                <span class="player-name" id="topPlayerName">郁悶寒少爺</span>
+                <span class="player-level" id="topPlayerLevel">Lv.1級</span>
             </div>
-            <div class="flex items-center gap-1">
-                <span>💰</span> <span id="goldDisplay" class="font-bold text-amber-400">120</span>
-            </div>
-            <button onclick="game.toggleTheme()" class="px-2.5 py-1 rounded border border-[var(--border-gold)] bg-[var(--bg-card)] hover:opacity-80 transition cursor-pointer text-[11px]">
-                ☯️ 切换
-            </button>
-        </div>
-    </div>
-
-    <!-- Navigation Tab Buttons -->
-    <div class="grid grid-cols-6 gap-1 bg-[var(--bg-main)] p-1 rounded-lg border border-[var(--border-gold)] text-center text-xs font-bold">
-        <button onclick="game.switchTab('char')" id="tabBtnChar" class="py-1.5 rounded transition bg-[var(--bg-card)] border border-[var(--border-gold)]">角色</button>
-        <button onclick="game.switchTab('bag')" id="tabBtnBag" class="py-1.5 rounded transition bg-[var(--bg-card)] border border-[var(--border-gold)] relative">背包 <span id="bagBadge" class="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] px-1 rounded-full">4</span></button>
-        <button onclick="game.switchTab('map')" id="tabBtnMap" class="py-1.5 rounded transition bg-[var(--bg-card)] border border-[var(--border-gold)]">舆图关卡</button>
-        <button onclick="game.switchTab('battle')" id="tabBtnBattle" class="py-1.5 rounded transition bg-amber-700 text-white shadow">战斗</button>
-        <button onclick="game.switchTab('chat')" id="tabBtnChat" class="py-1.5 rounded transition bg-[var(--bg-card)] border border-[var(--border-gold)]">聊天</button>
-        <button onclick="game.switchTab('menu')" id="tabBtnMenu" class="py-1.5 rounded transition bg-[var(--bg-card)] border border-[var(--border-gold)]">菜单</button>
-    </div>
-
-    <!-- Battle Tab Content matching reference image layout -->
-    <div id="tabContentBattle" class="flex flex-col gap-2">
-        <div class="flex flex-wrap items-center justify-between gap-2 bg-[var(--bg-main)] p-2 rounded-lg border border-[var(--border-gold)]">
-            <div class="flex items-center gap-2">
-                <button onclick="game.startBattle()" id="btnStartBattle" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-1.5 rounded text-xs shadow border border-indigo-400 cursor-pointer">
-                    开始战斗
-                </button>
-                <label class="flex items-center gap-1 text-xs cursor-pointer">
-                    <input type="checkbox" id="autoBattleToggle" onchange="game.toggleAutoBattle()" class="w-4 h-4 accent-amber-600 rounded">
-                    <span>自动战斗</span>
-                </label>
-            </div>
-            <div class="flex items-center gap-2 text-xs">
-                <span class="text-amber-400 font-bold" id="currentBattleInfo">当前关卡：渔阳密林 (普通)</span>
-                <button onclick="game.switchTab('map')" class="bg-red-600 hover:bg-red-500 text-white font-bold px-3 py-1.5 rounded text-xs shadow border border-red-400 cursor-pointer">
-                    返回
-                </button>
+            <div class="currency-display">
+                <div class="currency-item"><span>💰</span><span id="topSilver">0</span></div>
+                <div class="currency-item"><span>🟡</span><span id="topGold">0</span></div>
             </div>
         </div>
 
-        <!-- 2x2 Battle Status Grid Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <!-- Card 1: Player (Solo) -->
-            <div class="bg-[var(--bg-main)] border-2 border-indigo-700/80 rounded-lg p-3 flex gap-3 items-center shadow-inner">
-                <div class="w-14 h-14 bg-indigo-900 border border-indigo-500 rounded-lg flex items-center justify-center text-2xl overflow-hidden shrink-0 shadow">
-                    👦
-                </div>
-                <div class="flex-1 space-y-1.5 text-xs">
-                    <div class="font-bold text-indigo-300 text-sm flex justify-between">
-                        <span>郁悶寒少爷</span>
-                        <span class="text-[10px] text-amber-400 font-normal">单机修仙者</span>
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <div class="nav-tab" onclick="switchTab('char', event)">角色</div>
+            <div class="nav-tab" onclick="switchTab('backpack', event)">背包</div>
+            <div class="nav-tab active" onclick="switchTab('map', event)">輿圖關卡</div>
+            <div class="nav-tab" onclick="switchTab('battle', event)">戰鬥</div>
+            <div class="nav-tab" onclick="switchTab('chat', event)">聊天</div>
+            <div class="nav-tab" onclick="switchTab('menu', event)">選單</div>
+        </div>
+
+        <!-- 1. Character Tab -->
+        <div id="tab-char" class="content-area">
+            <div class="char-panel-wrapper">
+                <div class="equipment-circle-layout">
+                    <div class="eq-row">
+                        <div class="slot" onclick="openEquipmentSlot(0)"><span id="eq-icon-0">▢</span><span class="slot-label">護符1</span></div>
+                        <div class="slot" onclick="openEquipmentSlot(1)"><span id="eq-icon-1">▢</span><span class="slot-label">護符2</span></div>
+                        <div class="slot" onclick="openEquipmentSlot(2)"><span id="eq-icon-2">▢</span><span class="slot-label">戒指1</span></div>
+                        <div class="slot" onclick="openEquipmentSlot(3)"><span id="eq-icon-3">▢</span><span class="slot-label">戒指2</span></div>
                     </div>
-                    <div>
-                        <div class="flex justify-between text-[10px] text-slate-300"><span>HP (生命)</span> <span id="p1Hp">418/418</span></div>
-                        <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700">
-                            <div id="p1HpBar" class="bg-red-600 h-full transition-all duration-300" style="width: 100%;"></div>
+                    <div class="eq-middle-row">
+                        <div class="slot" onclick="openEquipmentSlot(4)"><span id="eq-icon-4">▢</span><span class="slot-label">頭盔</span></div>
+                        <div class="char-center-avatar">
+                            <div class="avatar-img">👦</div>
+                            <div class="avatar-title">獨行少俠</div>
                         </div>
+                        <div class="slot" onclick="openEquipmentSlot(5)"><span id="eq-icon-5">▢</span><span class="slot-label">裝飾</span></div>
                     </div>
-                    <div>
-                        <div class="flex justify-between text-[10px] text-slate-300"><span>MP (真气)</span> <span id="p1Mp">170/170</span></div>
-                        <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700">
-                            <div id="p1MpBar" class="bg-blue-600 h-full transition-all duration-300" style="width: 100%;"></div>
-                        </div>
+                    <div class="eq-middle-row">
+                        <div class="slot" onclick="openEquipmentSlot(6)"><span id="eq-icon-6">▢</span><span class="slot-label">武器</span></div>
+                        <div class="slot" onclick="openEquipmentSlot(7)"><span id="eq-icon-7">▢</span><span class="slot-label">防具</span></div>
+                    </div>
+                    <div class="eq-row">
+                        <div class="slot" onclick="openEquipmentSlot(8)"><span id="eq-icon-8">▢</span><span class="slot-label">挂件</span></div>
+                        <div class="slot" onclick="openEquipmentSlot(9)"><span id="eq-icon-9">▢</span><span class="slot-label">靴子</span></div>
+                    </div>
+                </div>
+
+                <div class="char-stats-summary">
+                    <h3 id="summaryName">郁悶寒少爺</h3>
+                    <p id="summaryRealm">初窺門徑 · Lv.1</p>
+                    <p>攻擊: <span id="statAtk">10</span> | 防禦: <span id="statDef">5</span></p>
+                    <p>經驗值: <span id="statExp">0</span> / <span id="statMaxExp">100</span></p>
+                </div>
+
+                <div class="suit-switch-section">
+                    <div class="suit-title">快速切換裝備套裝</div>
+                    <div class="suit-btns">
+                        <button class="suit-btn" onclick="switchSuit(1)">1</button>
+                        <button class="suit-btn" onclick="switchSuit(2)">2</button>
+                        <button class="suit-btn" onclick="switchSuit(3)">3</button>
+                        <button class="suit-btn" onclick="viewSuit()">看</button>
+                    </div>
+                    <div class="extra-suit-actions">
+                        <button class="sub-action-btn" onclick="openSubModal('法寶')">法寶</button>
+                        <button class="sub-action-btn" onclick="openSubModal('錦衣')">錦衣</button>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Card 2: Solo Status / Realm Insight -->
-            <div class="bg-[var(--bg-main)] border-2 border-amber-700/80 rounded-lg p-3 flex gap-3 items-center shadow-inner">
-                <div class="w-14 h-14 bg-amber-950 border border-amber-500 rounded-lg flex items-center justify-center text-2xl overflow-hidden shrink-0 shadow">
-                    ☯️
-                </div>
-                <div class="flex-1 space-y-1 text-xs">
-                    <div class="font-bold text-amber-400">金丹大圆满境</div>
-                    <div class="text-slate-300 text-[11px] leading-relaxed">
-                        一人一剑闯九州，斩妖除魔证大道。<br>敌人随关卡递增实力，战意无穷！
-                    </div>
-                </div>
+        <!-- 2. Backpack Tab -->
+        <div id="tab-backpack" class="content-area">
+            <div class="backpack-header">
+                <span>背包行囊 (50格 / 已解鎖 15格)</span>
+                <button class="sub-action-btn" onclick="expandBackpack()">擴充背包 (500銀)</button>
             </div>
+            <div class="backpack-grid" id="backpackGrid"></div>
+        </div>
 
-            <!-- Card 3: Enemy 1 -->
-            <div class="bg-[var(--bg-main)] border-2 border-red-700/80 rounded-lg p-2.5 flex gap-2 items-center shadow-inner">
-                <div class="w-12 h-12 bg-red-950 border border-red-500 rounded flex items-center justify-center text-xl overflow-hidden shrink-0">
-                    🐛
-                </div>
-                <div class="flex-1 space-y-1 text-xs">
-                    <div id="e1Name" class="font-bold text-red-400">海毛虫</div>
-                    <div>
-                        <div class="flex justify-between text-[10px] text-slate-300"><span>HP</span> <span id="e1Hp">336/336</span></div>
-                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
-                            <div id="e1HpBar" class="bg-red-600 h-full transition-all duration-300" style="width: 100%;"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-[10px] text-slate-300"><span>MP</span> <span id="e1Mp">157/157</span></div>
-                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
-                            <div id="e1MpBar" class="bg-blue-600 h-full transition-all duration-300" style="width: 100%;"></div>
-                        </div>
-                    </div>
-                </div>
+        <!-- 3. Map Tab - 平線與真實素材城池地圖 (100關) -->
+        <div id="tab-map" class="content-area active">
+            <div class="map-top-bar">
+                <span id="currentMapTitle">🏯 九州戰國 · 宮殿戰略輿圖 (第 1 關 / 100)</span>
+                <button class="sub-action-btn" onclick="jumpToCurrentBattle()">⚔️ 前往戰鬥</button>
             </div>
-
-            <!-- Card 4: Enemy 2 -->
-            <div class="bg-[var(--bg-main)] border-2 border-amber-700/80 rounded-lg p-2.5 flex gap-2 items-center shadow-inner">
-                <div class="flex-1 space-y-1 text-xs text-right">
-                    <div id="e2Name" class="font-bold text-amber-400">树怪</div>
-                    <div>
-                        <div class="flex justify-between text-[10px] text-slate-300"><span id="e2Hp">320/320</span> <span>HP</span></div>
-                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
-                            <div id="e2HpBar" class="bg-red-600 h-full transition-all duration-300" style="width: 100%;"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-[10px] text-slate-300"><span id="e2Mp">144/144</span> <span>MP</span></div>
-                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
-                            <div id="e2MpBar" class="bg-blue-600 h-full transition-all duration-300" style="width: 100%;"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="w-12 h-12 bg-amber-950 border border-amber-500 rounded flex items-center justify-center text-xl overflow-hidden shrink-0">
-                    🌳
+            <div class="difficulty-select-bar">
+                <button class="diff-btn active" onclick="selectDifficulty('normal', event)">普通關卡</button>
+                <button class="diff-btn locked-diff" id="diffBtn-hell" onclick="selectDifficulty('hell', event)">地獄 🔒</button>
+                <button class="diff-btn locked-diff" id="diffBtn-nightmare" onclick="selectDifficulty('nightmare', event)">夢魘 🔒</button>
+                <button class="diff-btn locked-diff" id="diffBtn-godlike" onclick="selectDifficulty('godlike', event)">神人 🔒</button>
+            </div>
+            <div class="node-map-container">
+                <div class="node-map-canvas" id="nodeMapCanvas">
+                    <svg class="map-svg-lines" id="mapSvgLines"></svg>
                 </div>
             </div>
         </div>
 
-        <!-- Combat Log Feed -->
-        <div class="bg-[var(--bg-main)] rounded-lg p-2.5 border border-[var(--border-gold)]">
-            <div id="battleLogContainer" class="h-40 overflow-y-auto font-mono text-xs space-y-1 leading-relaxed">
-                <div class="text-emerald-400 font-bold">【战国战场就绪】请在舆图选择关卡与难度并开始迎敌！</div>
+        <!-- 4. Battle Tab -->
+        <div id="tab-battle" class="content-area">
+            <div class="battle-top-controls">
+                <button class="battle-btn" id="battleActionBtn" onclick="toggleBattleState()">開始戰鬥</button>
+                <label class="auto-battle-label"><input type="checkbox" id="autoBattleCheck" onchange="toggleAutoBattle()"> 自動</label>
+                <span id="battleStageInfo" style="font-size:12px; color:var(--text-gold); margin-left:auto;">第 1 關</span>
+            </div>
+
+            <div class="combatant-card">
+                <div class="combatant-header">
+                    <span class="combatant-name">郁悶寒少爺</span>
+                    <span style="font-size:11px; color:var(--text-gold);" id="battlePlayerLevel">Lv.1</span>
+                </div>
+                <div class="bar-container">
+                    <div class="bar-label-row"><span>HP</span><span id="playerHpText">20/20</span></div>
+                    <div class="bar-track"><div class="bar-fill-hp" id="playerHpBar" style="width:100%"></div></div>
+                </div>
+                <div class="bar-container" style="margin-bottom:0;">
+                    <div class="bar-label-row"><span>MP</span><span id="playerMpText">10/10</span></div>
+                    <div class="bar-track"><div class="bar-fill-mp" id="playerMpBar" style="width:100%"></div></div>
+                </div>
+            </div>
+
+            <div class="combatant-card" style="margin-bottom:6px;">
+                <div class="combatant-header">
+                    <span class="combatant-name" id="battleEnemyName">山賊</span>
+                    <span id="battleEnemyLevel" style="font-size:11px; color:#ef4444;">Lv.1</span>
+                </div>
+                <div class="bar-container">
+                    <div class="bar-label-row"><span>HP</span><span id="enemyHpText">15/15</span></div>
+                    <div class="bar-track"><div class="bar-fill-hp" id="enemyHpBar" style="width:100%"></div></div>
+                </div>
+                <div class="bar-container" style="margin-bottom:0;">
+                    <div class="bar-label-row"><span>MP</span><span id="enemyMpText">8/8</span></div>
+                    <div class="bar-track"><div class="bar-fill-mp" id="enemyMpBar" style="width:100%"></div></div>
+                </div>
+            </div>
+
+            <div class="battle-log-box" id="battleLogBox">
+                <div>[戰報] 歡迎來到戰國風雲錄！</div>
+            </div>
+        </div>
+
+        <!-- 5. Chat Tab -->
+        <div id="tab-chat" class="content-area">
+            <div class="chat-box" id="chatBox">
+                <div><span style="color:#3b82f6;">[世界]</span> <b>墨家巨子</b>：歡迎少俠加入戰國江湖！</div>
+            </div>
+            <div class="chat-input-row">
+                <input type="text" class="chat-input" id="chatInputMsg" placeholder="輸入訊息...">
+                <button class="chat-send-btn" onclick="sendChatMessage()">發送</button>
+            </div>
+        </div>
+
+        <!-- 6. Menu Tab -->
+        <div id="tab-menu" class="content-area">
+            <div class="menu-grid">
+                <div class="menu-card" onclick="openSubModal('宗門洞府')"><h4>宗門洞府</h4><p>修煉功法</p></div>
+                <div class="menu-card" onclick="openSubModal('煉丹坊')"><h4>煉丹坊</h4><p>煉製丹藥</p></div>
+                <div class="menu-card" onclick="openSubModal('江湖坊市')"><h4>江湖坊市</h4><p>買賣裝備</p></div>
+                <div class="menu-card" onclick="openSubModal('排行榜')"><h4>天榜排名</h4><p>高手排行</p></div>
+                <div class="menu-card" onclick="saveGameData()"><h4>保存進度</h4><p>手動儲存</p></div>
+                <div class="menu-card" onclick="resetGameData()"><h4>重置遊戲</h4><p>清除進度</p></div>
             </div>
         </div>
     </div>
 
-    <!-- Map Tab Content matching reference image 2 (strategic node network) -->
-    <div id="tabContentMap" class="hidden flex flex-col gap-2">
-        <div class="flex flex-wrap justify-between items-center bg-[var(--bg-main)] p-2 rounded-lg border border-[var(--border-gold)] text-xs gap-2">
-            <div class="font-bold text-amber-400">🗺️ 九州战国・战略舆图与关卡网络</div>
-            <div class="flex items-center gap-1.5">
-                <span class="text-slate-300 font-semibold">选择难度：</span>
-                <select id="difficultySelect" onchange="game.changeDifficulty(this.value)" class="bg-[var(--bg-card)] border border-[var(--border-gold)] text-amber-300 rounded px-2 py-1 text-xs font-bold">
-                    <option value="normal">🟢 普通关卡 (1.0x 掉落)</option>
-                    <option value="hell">🔵 地獄关卡 (1.5x 掉落+稀有)</option>
-                    <option value="nightmare">🟣 夢魘关卡 (2.2x 掉落+极品)</option>
-                    <option value="godlike">🔴 神人关卡 (3.5x 掉落+彩虹白金)</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="map-container" id="mapContainerElement">
-            <svg id="mapSvgLines" class="absolute inset-0 w-full h-full pointer-events-none" style="min-width: 800px; min-height: 440px;"></svg>
-            <div id="mapNodesWrapper" class="relative w-full h-full" style="min-width: 800px; min-height: 440px;">
-                <!-- Dynamically positioned nodes -->
-            </div>
-        </div>
-        <div class="text-[11px] text-center opacity-70">
-            提示：依过关顺序推进各诸侯国节点！挑战更高难度可解锁闪耀白金与动态彩虹光神装！
-        </div>
-    </div>
-
-    <!-- Character Equipment Tab matching reference image layout -->
-    <div id="tabContentChar" class="hidden bg-[var(--bg-main)] p-4 rounded-lg border border-[var(--border-gold)] text-xs space-y-3">
-        <div class="flex justify-between items-center border-b border-[var(--border-gold)] pb-1.5">
-            <h3 class="font-bold text-amber-400">📜 掌门角色档案与装备槽位</h3>
-            <span class="text-[10px] text-slate-400">点击装备槽卸下装备</span>
-        </div>
-
-        <div class="flex flex-col items-center justify-center py-2">
-            <!-- Exact Reference Image Layout for Equipment Slots -->
-            <div class="relative w-[340px] h-[340px] bg-[var(--bg-card)] border-2 border-[var(--border-gold)] rounded-xl p-4 flex flex-col items-center justify-center shadow-2xl">
-                
-                <!-- Top Row Slots (4 items) -->
-                <div class="absolute top-3 left-4 right-4 flex justify-between px-1">
-                    <div id="eqSlot_amulet1" onclick="game.unequipSlot('amulet1')" class="w-12 h-12 bg-[var(--bg-main)] border-2 border-dashed border-[var(--border-gold)] rounded-lg flex items-center justify-center text-xl cursor-pointer hover:border-amber-400 transition shadow" title="饰品1">💍</div>
-                    <div id="eqSlot_amulet2" onclick="game.unequipSlot('amulet2')" class="w-12 h-12 bg-[var(--bg-main)] border-2 border-dashed border-[var(--border-gold)] rounded-lg flex items-center justify-center text-xl cursor-pointer hover:border-amber-400 transition shadow" title="饰品2">📿</div>
-                    <div id="eqSlot_ring1" onclick="game.unequipSlot('ring1')" class="w-12 h-12 bg-[var(--bg-main)] border-2 border-dashed border-[var(--border-gold)] rounded-lg flex items-center justify-center text-xl cursor-pointer hover:border-amber-400 transition shadow" title="戒指1">💍</div>
-                    <div id="eqSlot_ring2" onclick="game.unequipSlot('ring2')" class="w-12 h-12 bg-[var(--bg-main)] border-2 border-dashed border-[var(--border-gold)] rounded-lg flex items-center justify-center text-xl cursor-pointer hover:border-amber-400 transition shadow" title="戒指2">💍</div>
-                </div>
-
-                <!-- Left Row Slots -->
-                <div class="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-4">
-                    <div id="eqSlot_helm" onclick="game.unequipSlot('helm')" class="w-12 h-12 bg-[var(--bg-main)] border-2 border-[var(--border-gold)] rounded-lg flex items-center justify-center text-xl cursor-pointer hover:border-amber-400 transition shadow" title="头盔">🪖</div>
-                    <div id="eqSlot_weapon" onclick="game.unequipSlot('weapon')" class="w-12 h-12 bg-[var(--bg-main)] border-2 border-[var(--border-gold)] rounded-lg flex items-center justify-center text-xl cursor-pointer hover:border-amber-400 transition shadow" title="武器">⚔️</div>
-                </div>
-
-                <!-- Right Row Slots -->
-                <div class="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-4">
-                    <div id="eqSlot_armor" onclick="game.unequipSlot('armor')" class="w-12 h-12 bg-[var(--bg-main)] border-2 border-[var(--border-gold)] rounded-lg flex items-center justify-center text-xl cursor-pointer hover:border-amber-400 transition shadow" title="战甲">🛡️</div>
-                    <div id="eqSlot_boots" onclick="game.unequipSlot('boots')" class="w-12 h-12 bg-[var(--bg-main)] border-2 border-[var(--border-gold)] rounded-lg flex items-center justify-center text-xl cursor-pointer hover:border-amber-400 transition shadow" title="战靴">👢</div>
-                </div>
-
-                <!-- Center Avatar & Stats -->
-                <div class="flex flex-col items-center justify-center my-auto">
-                    <div class="w-20 h-20 bg-indigo-950 border-2 border-indigo-400 rounded-lg flex items-center justify-center text-4xl shadow-md mb-1">
-                        👦
-                    </div>
-                    <div class="font-bold text-amber-400 text-sm">郁悶寒少爷</div>
-                    <div class="text-[10px] text-slate-300">金丹大圆满 · Lv.27</div>
-                    <div class="flex gap-3 mt-1 text-xs">
-                        <div>攻击: <span id="charAtk" class="font-bold text-red-400">185</span></div>
-                        <div>防御: <span id="charDef" class="font-bold text-sky-400">92</span></div>
-                    </div>
-                </div>
-
-                <!-- Bottom Action Controls matching reference image -->
-                <div class="absolute bottom-2 left-4 right-4 flex flex-col items-center gap-1.5">
-                    <div class="text-[10px] text-slate-400">快速切换装备套装</div>
-                    <div class="flex gap-1">
-                        <button class="px-2 py-0.5 bg-[var(--bg-main)] border border-[var(--border-gold)] rounded text-[10px] text-amber-300 font-bold">1</button>
-                        <button class="px-2 py-0.5 bg-[var(--bg-main)] border border-[var(--border-gold)] rounded text-[10px] text-amber-300 font-bold">2</button>
-                        <button class="px-2 py-0.5 bg-[var(--bg-main)] border border-[var(--border-gold)] rounded text-[10px] text-amber-300 font-bold">3</button>
-                        <button class="px-2 py-0.5 bg-[var(--bg-main)] border border-[var(--border-gold)] rounded text-[10px] text-slate-300">看</button>
-                    </div>
-                    <div class="flex gap-2">
-                        <button class="px-3 py-0.5 bg-amber-800 text-white rounded text-[10px] font-bold">法宝</button>
-                        <button class="px-3 py-0.5 bg-red-900 text-white rounded text-[10px] font-bold">锦衣</button>
-                    </div>
-                </div>
-
+    <!-- Modal -->
+    <div class="modal-overlay" id="genericModal">
+        <div class="modal-box">
+            <div class="modal-title" id="modalTitle">提示</div>
+            <div class="modal-content" id="modalContent">內容文字...</div>
+            <div class="modal-btns">
+                <button class="modal-btn" onclick="closeModal()">確定</button>
             </div>
         </div>
     </div>
 
-    <!-- Inventory Tab Content (50 slots total: 15 unlocked, 35 locked) -->
-    <div id="tabContentBag" class="hidden bg-[var(--bg-main)] p-4 rounded-lg border border-[var(--border-gold)] text-xs space-y-3">
-        <div class="flex justify-between items-center border-b border-[var(--border-gold)] pb-1.5">
-            <h3 class="font-bold text-amber-400">🎒 神兵灵药行囊 (共50格：15已开启，35锁定)</h3>
-            <span class="text-[10px] text-slate-400">点击物品可装备或使用，点击锁定位可消耗银币开启</span>
-        </div>
-        <div id="inventoryContainer" class="grid grid-cols-5 sm:grid-cols-10 gap-2">
-            <!-- Dynamically populated 50 slots -->
-        </div>
-    </div>
+    <script>
+        const game = {
+            name: "郁悶寒少爺",
+            level: 1,
+            exp: 0,
+            maxExp: 100,
+            silver: 0,
+            gold: 0,
+            hp: 20,
+            maxHp: 20,
+            mp: 10,
+            maxMp: 10,
+            atk: 10,
+            def: 5,
+            realm: "初窺門徑",
+            difficulty: "normal",
+            currentStage: { normal: 1, hell: 1, nightmare: 1, godlike: 1 },
+            maxUnlockedStage: { normal: 1, hell: 1, nightmare: 1, godlike: 1 },
+            unlockedDiffs: { normal: true, hell: false, nightmare: false, godlike: false },
+            equipment: [null, null, null, null, null, null, null, null, null, null],
+            backpack: [],
+            unlockedBackpackSlots: 15
+        };
 
-    <!-- Chat Tab Content -->
-    <div id="tabContentChat" class="hidden bg-[var(--bg-main)] p-4 rounded-lg border border-[var(--border-gold)] text-xs space-y-2">
-        <h3 class="font-bold text-amber-400 border-b border-[var(--border-gold)] pb-1.5">💬 世界修仙频道</h3>
-        <div class="bg-[var(--bg-card)] p-3 rounded h-36 overflow-y-auto space-y-1 font-mono">
-            <div><span class="text-amber-400">[世界] 墨家巨子:</span> 诸国神人级关卡已全线开启，谁能爆出彩虹光白金神兵？</div>
-            <div><span class="text-indigo-400">[仙盟] 郁悶寒少爷:</span> 正在横扫各郡秘境，搜罗高级装备！</div>
-            <div><span class="text-emerald-400">[传闻] 系统提示:</span> 玩家在梦魘关卡斩杀首领，获得紫色极品战甲！</div>
-        </div>
-    </div>
+        const MAP_NODES = [];
+        const baseNames = ["險道", "宮門", "大殿", "渡口", "大營", "王宮", "澤國", "王城", "學宮", "漁村", "關隘", "殿宇", "密林", "騎射營", "長廊", "荒野", "古戰場", "行宮", "要塞", "之巔"];
+        const regions = ["函谷", "咸陽", "大梁", "臨淄", "燕城", "邯鄲", "代郡", "巨鹿", "長平", "咸陽"];
 
-    <!-- Menu Tab Content -->
-    <div id="tabContentMenu" class="hidden bg-[var(--bg-main)] p-4 rounded-lg border border-[var(--border-gold)] text-xs space-y-3">
-        <h3 class="font-bold text-amber-400 border-b border-[var(--border-gold)] pb-1.5">⚙️ 系统功能菜单</h3>
-        <div class="grid grid-cols-2 gap-2">
-            <button onclick="game.switchTab('map')" class="bg-amber-700 hover:bg-amber-600 text-white p-2 rounded font-bold cursor-pointer">🗺️ 切换至关卡舆图</button>
-            <button onclick="game.showModal('难度与掉落说明', '普通：基础经验与银币掉落。\n地獄：1.5倍加成，绿蓝紫装掉率提升。\n夢魘：2.2倍加成，高概率爆红装与黄装。\n神人：3.5倍顶级加成，必出白金神兵及彩虹光特效装备！')" class="bg-[var(--bg-card)] border border-[var(--border-gold)] p-2 rounded font-bold cursor-pointer">📖 难度与掉落说明</button>
-            <button onclick="game.showModal('特效装备鉴赏', '高阶装备与宝物在背包及角色槽中拥有独特的光圈与动态彩虹边框特效，且不显示冗余文字，完美还原经典修仙页游质感。')" class="bg-[var(--bg-card)] border border-[var(--border-gold)] p-2 rounded font-bold cursor-pointer">✨ 特效鉴赏</button>
-            <button onclick="location.reload()" class="bg-red-900 hover:bg-red-800 text-white p-2 rounded font-bold cursor-pointer">🔄 重新加载游戏</button>
-        </div>
-    </div>
-
-    <div class="text-center text-[10px] opacity-60">
-        戰國風雲錄：問道修仙與江湖征戰 © 2026 Strategy Wuxia Engine
-    </div>
-</div>
-
-<!-- Modal Dialog -->
-<div id="customModal" class="modal-overlay hidden">
-    <div class="modal-card text-center">
-        <h3 id="modalTitle" class="text-lg font-bold text-amber-400 mb-2">📜 提示</h3>
-        <p id="modalMessage" class="text-sm mb-4 leading-relaxed whitespace-pre-wrap">内容...</p>
-        <button onclick="game.closeModal()" class="bg-amber-700 hover:bg-amber-600 text-white font-bold px-6 py-2 rounded border border-amber-500 transition cursor-pointer">
-            确认知悉
-        </button>
-    </div>
-</div>
-
-<script>
-    class WuxiaGameEngine {
-        constructor() {
-            this.isDarkTheme = true;
-            this.autoBattle = false;
-            this.battleTimer = null;
-            this.silver = 26703;
-            this.currentDifficulty = 'normal'; // normal, hell, nightmare, godlike
-            this.unlockedBagSlots = 15; // 15 unlocked, 35 locked (total 50)
+        for (let i = 1; i <= 100; i++) {
+            let region = regions[Math.floor((i - 1) / 10) % regions.length];
+            let nameSuffix = baseNames[(i - 1) % baseNames.length];
+            let nodeName = `${region}·第${i}關${nameSuffix}`;
             
-            // Player stats (Solo protagonist)
-            this.p1 = { hp: 418, maxHp: 418, mp: 170, maxMp: 170 };
-            this.baseAtk = 185;
-            this.baseDef = 92;
+            let x = 80 + (i - 1) * 60;
+            let y = 210 + ((i % 2 === 0) ? 15 : -15);
+            let nextNodes = i < 100 ? [i + 1] : [];
+            MAP_NODES.push({ id: i, name: nodeName, x: x, y: y, next: nextNodes });
+        }
 
-            // Equipped gear slots
-            this.equipped = {
-                weapon: null,
-                armor: null,
-                helm: null,
-                boots: null,
-                amulet1: null,
-                amulet2: null,
-                ring1: null,
-                ring2: null
-            };
-
-            // Inventory items
-            this.inventory = [
-                { id: 1, name: "聚气大丹", type: "丹药", slotType: "consumable", count: 12, rarity: "white", icon: "💊", atkBonus: 0, defBonus: 0, desc: "基础修炼丹药" },
-                { id: 2, name: "青釭宝剑", type: "武器", slotType: "weapon", count: 1, rarity: "blue", icon: "🗡️", atkBonus: 45, defBonus: 10, desc: "锋利无比的战国名剑" },
-                { id: 3, name: "玄铁软甲", type: "防具", slotType: "armor", count: 1, rarity: "purple", icon: "🛡️", atkBonus: 15, defBonus: 60, desc: "紫霞真气加持的坚固重甲" },
-                { id: 4, name: "轩辕神剑", type: "神器", slotType: "weapon", count: 1, rarity: "rainbow", icon: "⚔️", atkBonus: 180, defBonus: 50, desc: "散发绝世彩虹光的上古神兵！" }
+        function initBackpack() {
+            game.backpack = [
+                { id: 1, name: "聚氣大丹", type: "pill", rarity: "white", icon: "💊", count: 3 },
+                { id: 2, name: "粗布衣", type: "armor", rarity: "white", icon: "👕", atk: 0, def: 2 },
             ];
-
-            // 18 Campaign stages positioned across 6 Warring States regions for the map view
-            this.stages = [
-                { id: 1, name: "渔阳密林", realm: "燕州", enemy1: "海毛虫", enemy2: "树怪", unlocked: true, cleared: false, x: 75, y: 18 },
-                { id: 2, name: "蓟城关隘", realm: "燕州", enemy1: "铁甲卫士", enemy2: "叛军术士", unlocked: false, cleared: false, x: 83, y: 28 },
-                { id: 3, name: "燕王宫殿", realm: "燕州", enemy1: "燕国大将", enemy2: "禁军统领", unlocked: false, cleared: false, x: 91, y: 20 },
-                
-                { id: 4, name: "代郡荒野", realm: "赵州", enemy1: "沙地蝎", enemy2: "石傀儡", unlocked: false, cleared: false, x: 55, y: 25 },
-                { id: 5, name: "邯郸长廊", realm: "赵州", enemy1: "赵国铁骑", enemy2: "飞刀刺客", unlocked: false, cleared: false, x: 62, y: 35 },
-                { id: 6, name: "胡服骑射营", realm: "赵州", enemy1: "廉颇副官", enemy2: "精锐弓手", unlocked: false, cleared: false, x: 68, y: 25 },
-
-                { id: 7, name: "即墨渔村", realm: "齐州", enemy1: "东海鲨怪", enemy2: "海盗头子", unlocked: false, cleared: false, x: 88, y: 45 },
-                { id: 8, name: "稷下学宫", realm: "齐州", enemy1: "叛变学子", enemy2: "机关木人", unlocked: false, cleared: false, x: 92, y: 55 },
-                { id: 9, name: "临淄王城", realm: "齐州", enemy1: "大司马", enemy2: "稷下剑圣", unlocked: false, cleared: false, x: 84, y: 62 },
-
-                { id: 10, name: "大梁渡口", realm: "魏州", enemy1: "河妖", enemy2: "水鬼", unlocked: false, cleared: false, x: 50, y: 48 },
-                { id: 11, name: "武卒大营", realm: "魏州", enemy1: "魏武卒", enemy2: "重甲枪手", unlocked: false, cleared: false, x: 58, y: 58 },
-                { id: 12, name: "魏王宫", realm: "魏州", enemy1: "魏国国相", enemy2: "禁卫军师", unlocked: false, cleared: false, x: 48, y: 65 },
-
-                { id: 13, name: "洞庭泽国", realm: "楚州", enemy1: "云梦巨蟒", enemy2: "泽国水妖", unlocked: false, cleared: false, x: 68, y: 78 },
-                { id: 14, name: "郢都南郊", realm: "楚州", enemy1: "百越战士", enemy2: "巫蛊师", unlocked: false, cleared: false, x: 78, y: 85 },
-                { id: 15, name: "屈原故里", realm: "楚州", enemy1: "楚国令尹", enemy2: "降灵死士", unlocked: false, cleared: false, x: 85, y: 75 },
-
-                { id: 16, name: "函谷险道", realm: "秦州", enemy1: "铁鹰锐士", enemy2: "弩兵什长", unlocked: false, cleared: false, x: 22, y: 40 },
-                { id: 17, name: "咸阳宫门", realm: "秦州", enemy1: "大秦都尉", enemy2: "黑冰台密探", unlocked: false, cleared: false, x: 30, y: 55 },
-                { id: 18, name: "阿房大殿", realm: "秦州", enemy1: "始皇影卫", enemy2: "机关兽", unlocked: false, cleared: false, x: 38, y: 48 }
-            ];
-
-            this.currentStageIndex = 0;
-            this.activeEnemy = { name: "海毛虫", hp: 336, maxHp: 336, mp: 157, maxMp: 157 };
-            this.activeEnemy2 = { name: "树怪", hp: 320, maxHp: 320, mp: 144, maxMp: 144 };
-
-            this.renderStrategicMap();
-            this.renderInventory();
-            this.updateCharacterStats();
-            this.updateCurrencyDisplay();
+            while (game.backpack.length < 50) game.backpack.push(null);
         }
 
-        toggleTheme() {
-            this.isDarkTheme = !this.isDarkTheme;
-            document.documentElement.className = this.isDarkTheme ? "theme-dark" : "theme-light";
+        function switchTab(tabName, event) {
+            document.querySelectorAll('.content-area').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+
+            let targetId = tabName === 'menu' ? 'tab-menu' : 'tab-' + tabName;
+            let targetEl = document.getElementById(targetId);
+            if (targetEl) targetEl.classList.add('active');
+            if (event && event.currentTarget) event.currentTarget.classList.add('active');
+
+            if (tabName === 'backpack') renderBackpack();
+            if (tabName === 'map') renderCityMap();
+            if (tabName === 'char') updateCharacterUI();
         }
 
-        switchTab(tabKey) {
-            ['char', 'bag', 'battle', 'chat', 'menu', 'map'].forEach(t => {
-                const el = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
-                if(el) el.classList.add('hidden');
-                const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
-                if(btn) btn.className = "py-1.5 rounded transition bg-[var(--bg-card)] border border-[var(--border-gold)]";
-            });
-            const targetEl = document.getElementById(`tabContent${tabKey.charAt(0).toUpperCase() + tabKey.slice(1)}`);
-            if(targetEl) targetEl.classList.remove('hidden');
-            const targetBtn = document.getElementById(`tabBtn${tabKey.charAt(0).toUpperCase() + tabKey.slice(1)}`);
-            if(targetBtn) targetBtn.className = "py-1.5 rounded transition bg-amber-700 text-white shadow font-bold";
+        function updateCharacterUI() {
+            document.getElementById('topPlayerName').innerText = game.name;
+            document.getElementById('topPlayerLevel').innerText = `Lv.${game.level}級`;
+            document.getElementById('topSilver').innerText = game.silver.toLocaleString();
+            document.getElementById('topGold').innerText = game.gold;
 
-            if(tabKey === 'map') {
-                this.renderStrategicMap();
-            } else if(tabKey === 'char') {
-                this.updateCharacterStats();
-            } else if(tabKey === 'bag') {
-                this.renderInventory();
-            }
-        }
+            document.getElementById('summaryName').innerText = game.name;
+            document.getElementById('summaryRealm').innerText = `${game.realm} · Lv.${game.level}`;
+            document.getElementById('statAtk').innerText = game.atk;
+            document.getElementById('statDef').innerText = game.def;
+            document.getElementById('statExp').innerText = game.exp;
+            document.getElementById('statMaxExp').innerText = game.maxExp;
+            document.getElementById('battlePlayerLevel').innerText = `Lv.${game.level}`;
 
-        changeDifficulty(val) {
-            this.currentDifficulty = val;
-            const diffNames = { normal: "普通", hell: "地獄", nightmare: "夢魘", godlike: "神人" };
-            const stage = this.stages[this.currentStageIndex];
-            document.getElementById("currentBattleInfo").textContent = `当前关卡：${stage.name} (${diffNames[val]})`;
-            this.addBattleLog(`⚙️ 切换挑战难度为：【${diffNames[val]}】！高难度下爆率与稀有宝物概率已提升。`);
-        }
-
-        renderStrategicMap() {
-            const wrapper = document.getElementById("mapNodesWrapper");
-            const svgLines = document.getElementById("mapSvgLines");
-            wrapper.innerHTML = "";
-            svgLines.innerHTML = "";
-
-            for (let i = 0; i < this.stages.length - 1; i++) {
-                const s1 = this.stages[i];
-                const s2 = this.stages[i + 1];
-                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                line.setAttribute("x1", `${s1.x}%`);
-                line.setAttribute("y1", `${s1.y}%`);
-                line.setAttribute("x2", `${s2.x}%`);
-                line.setAttribute("y2", `${s2.y}%`);
-                line.setAttribute("stroke", s1.cleared ? "#c29b61" : "#4a5568");
-                line.setAttribute("stroke-width", "2");
-                line.setAttribute("stroke-dasharray", s1.cleared ? "none" : "4");
-                svgLines.appendChild(line);
-            }
-
-            this.stages.forEach((stage, idx) => {
-                const node = document.createElement("div");
-                node.className = "map-node";
-                node.style.left = `${stage.x}%`;
-                node.style.top = `${stage.y}%`;
-
-                let bgClass = "bg-slate-800 border-slate-600 text-slate-400 opacity-60";
-                let iconSymbol = "🔒";
-
-                if (stage.cleared) {
-                    bgClass = "bg-emerald-950 border-emerald-500 text-emerald-300 shadow-md";
-                    iconSymbol = "✅";
-                } else if (stage.unlocked) {
-                    bgClass = "bg-amber-950 border-amber-500 text-amber-300 shadow-lg animate-pulse";
-                    iconSymbol = "⚔️";
-                }
-
-                node.innerHTML = `
-                    <div class="w-10 h-10 rounded-full border-2 ${bgClass} flex items-center justify-center text-sm font-bold shadow">
-                        ${iconSymbol}
-                    </div>
-                    <span class="text-[10px] font-bold mt-1 bg-black/60 px-1.5 py-0.5 rounded text-amber-200 border border-[var(--border-gold)] whitespace-nowrap">${stage.name}</span>
-                `;
-
-                node.onclick = () => {
-                    if (!stage.unlocked) {
-                        this.showModal("关卡未解锁", `必须依过关顺序推进！请先通关前置据点，方可进军【${stage.realm}・${stage.name}】！`);
-                        return;
-                    }
-                    this.selectStage(idx);
-                };
-
-                wrapper.appendChild(node);
-            });
-        }
-
-        selectStage(idx) {
-            this.currentStageIndex = idx;
-            const stage = this.stages[idx];
-            
-            let diffMultiplier = 1.0;
-            if (this.currentDifficulty === 'hell') diffMultiplier = 1.4;
-            if (this.currentDifficulty === 'nightmare') diffMultiplier = 1.9;
-            if (this.currentDifficulty === 'godlike') diffMultiplier = 2.6;
-
-            // Enemies scale up progressively with each stage index (idx) and difficulty
-            const stageScaling = 1.0 + (idx * 0.18);
-            const baseHp1 = Math.floor((300 + idx * 45) * stageScaling * diffMultiplier);
-            const baseHp2 = Math.floor((280 + idx * 42) * stageScaling * diffMultiplier);
-            const baseMp1 = Math.floor((150 + idx * 20) * stageScaling);
-            const baseMp2 = Math.floor((140 + idx * 18) * stageScaling);
-
-            this.activeEnemy = { name: stage.enemy1, hp: baseHp1, maxHp: baseHp1, mp: baseMp1, maxMp: baseMp1 };
-            this.activeEnemy2 = { name: stage.enemy2, hp: baseHp2, maxHp: baseHp2, mp: baseMp2, maxMp: baseMp2 };
-
-            document.getElementById("e1Name").textContent = stage.enemy1;
-            document.getElementById("e2Name").textContent = stage.enemy2;
-            this.p1.hp = this.p1.maxHp;
-
-            const diffNames = { normal: "普通", hell: "地獄", nightmare: "夢魘", godlike: "神人" };
-            document.getElementById("currentBattleInfo").textContent = `当前关卡：${stage.name} (${diffNames[this.currentDifficulty]})`;
-
-            this.updateBattleUI();
-            this.switchTab('battle');
-
-            const logBox = document.getElementById("battleLogContainer");
-            logBox.innerHTML = `<div class="text-amber-300 font-bold">【单机历练】进军 ${stage.realm}：${stage.name} [${diffNames[this.currentDifficulty]}]</div>
-                <div>敌方强敌：<span class="text-red-400">${stage.enemy1} (HP: ${baseHp1})</span> 与 <span class="text-amber-400">${stage.enemy2} (HP: ${baseHp2})</span> 气势汹汹！</div>`;
-        }
-
-        startBattle() {
-            if (this.activeEnemy.hp <= 0 && this.activeEnemy2.hp <= 0) {
-                this.addBattleLog(`当前关卡已经通关！请在舆图选择后续关卡或更高难度。`);
-                return;
-            }
-
-            let extraAtk = 0;
-            Object.values(this.equipped).forEach(item => {
-                if (item && item.atkBonus) extraAtk += item.atkBonus;
-            });
-            const totalAtk = this.baseAtk + extraAtk;
-
-            const dmg1 = Math.floor(Math.random() * 35) + Math.floor(totalAtk * 0.3);
-            const dmg2 = Math.floor(Math.random() * 30) + Math.floor(totalAtk * 0.25);
-
-            this.activeEnemy.hp = Math.max(0, this.activeEnemy.hp - dmg1);
-            this.activeEnemy2.hp = Math.max(0, this.activeEnemy2.hp - dmg2);
-
-            this.addBattleLog(`郁悶寒少爷 孤身御剑，对敌方造成 <span class="text-red-400 font-bold">${dmg1}</span> 与 <span class="text-red-400 font-bold">${dmg2}</span> 伤害！`);
-
-            if (this.activeEnemy.hp <= 0 && this.activeEnemy2.hp <= 0) {
-                const stage = this.stages[this.currentStageIndex];
-                stage.cleared = true;
-                
-                if (this.currentStageIndex + 1 < this.stages.length) {
-                    this.stages[this.currentStageIndex + 1].unlocked = true;
-                }
-
-                let mult = 1.0;
-                if (this.currentDifficulty === 'hell') mult = 1.5;
-                if (this.currentDifficulty === 'nightmare') mult = 2.2;
-                if (this.currentDifficulty === 'godlike') mult = 3.5;
-
-                const earnedSilver = Math.floor((200 + this.currentStageIndex * 80) * mult);
-                const earnedExp = Math.floor((600 + this.currentStageIndex * 200) * mult);
-                this.silver += earnedSilver;
-                this.updateCurrencyDisplay();
-
-                let droppedItem = this.rollItemDrop(this.currentDifficulty);
-                if (droppedItem) {
-                    if (this.inventory.length < this.unlockedBagSlots) {
-                        this.inventory.unshift(droppedItem);
-                        this.renderInventory();
-                        this.addBattleLog(`<span class="text-yellow-400 font-bold">🌟 战利品掉落：获得【${droppedItem.name}】已收入背包！</span>`);
+            const iconsDefault = ["▢", "▢", "▢", "▢", "▢", "▢", "▢", "▢", "▢", "▢"];
+            for (let i = 0; i < 10; i++) {
+                let iconEl = document.getElementById(`eq-icon-${i}`);
+                let item = game.equipment[i];
+                let slotEl = iconEl ? iconEl.parentElement : null;
+                if (slotEl && iconEl) {
+                    if (item) {
+                        slotEl.className = `slot filled rarity-${item.rarity}`;
+                        iconEl.innerText = item.icon;
                     } else {
-                        this.addBattleLog(`<span class="text-red-400 font-bold">⚠️ 背包已满，【${droppedItem.name}】掉落遗失！请开启更多背包格。</span>`);
+                        slotEl.className = "slot";
+                        iconEl.innerText = iconsDefault[i];
                     }
                 }
-
-                this.addBattleLog(`<span class="text-emerald-400 font-bold">🎉 独行大捷！经验 +${earnedExp}，银币 +${earnedSilver}</span>`);
-                this.showModal("关卡胜利", `恭喜单机通关【${stage.name}】(${this.currentDifficulty.toUpperCase()})！\n获得经验 ×${earnedExp}，银币 ×${earnedSilver}。\n${droppedItem ? '获得珍稀宝物：' + droppedItem.name : ''}`);
             }
-
-            this.updateBattleUI();
         }
 
-        rollItemDrop(diff) {
-            let rand = Math.random();
-            let chosenRarity = 'white';
-
-            if (diff === 'normal') {
-                if (rand < 0.05) chosenRarity = 'blue';
-                else if (rand < 0.2) chosenRarity = 'green';
-                else chosenRarity = 'white';
-            } else if (diff === 'hell') {
-                if (rand < 0.03) chosenRarity = 'purple';
-                else if (rand < 0.12) chosenRarity = 'blue';
-                else if (rand < 0.4) chosenRarity = 'green';
-                else chosenRarity = 'white';
-            } else if (diff === 'nightmare') {
-                if (rand < 0.02) chosenRarity = 'red';
-                else if (rand < 0.08) chosenRarity = 'purple';
-                else if (rand < 0.25) chosenRarity = 'blue';
-                else chosenRarity = 'green';
-            } else if (diff === 'godlike') {
-                if (rand < 0.01) chosenRarity = 'rainbow';
-                else if (rand < 0.05) chosenRarity = 'platinum';
-                else if (rand < 0.15) chosenRarity = 'yellow';
-                else if (rand < 0.35) chosenRarity = 'red';
-                else chosenRarity = 'purple';
-            }
-
-            const itemPool = {
-                white: [{ name: "粗制铁剑", type: "武器", slot: "weapon", icon: "🗡️", atk: 20, def: 5 }, { name: "布衣", type: "防具", slot: "armor", icon: "🥋", atk: 2, def: 15 }],
-                green: [{ name: "精钢长枪", type: "武器", slot: "weapon", icon: "🔱", atk: 38, def: 8 }, { name: "青铜护心镜", type: "防具", slot: "armor", icon: "🛡️", atk: 5, def: 35 }],
-                blue: [{ name: "湛卢宝剑", type: "武器", slot: "weapon", icon: "⚔️", atk: 65, def: 15 }, { name: "蛟龙软甲", type: "防具", slot: "armor", icon: "🥋", atk: 12, def: 55 }],
-                purple: [{ name: "紫电神鞭", type: "武器", slot: "weapon", icon: "⚡", atk: 98, def: 22 }, { name: "八卦战袍", type: "防具", slot: "armor", icon: "🔮", atk: 25, def: 85 }],
-                red: [{ name: "朱雀烈火杖", type: "武器", slot: "weapon", icon: "🔥", atk: 140, def: 35 }, { name: "赤血战铠", type: "防具", slot: "armor", icon: "🛡️", atk: 40, def: 120 }],
-                yellow: [{ name: "黄金龙胆枪", type: "武器", slot: "weapon", icon: "✨", atk: 195, def: 48 }, { name: "真龙帝王甲", type: "防具", slot: "armor", icon: "👑", atk: 60, def: 160 }],
-                platinum: [{ name: "白金陨铁神剑", type: "神器", slot: "weapon", icon: "🌟", atk: 260, def: 70 }, { name: "九天白金战盔", type: "头盔", slot: "helm", icon: "🪖", atk: 80, def: 90 }],
-                rainbow: [{ name: "混沌盘古开天斧", type: "上古神器", slot: "weapon", icon: "🌈", atk: 350, def: 100 }, { name: "太极鸿蒙彩虹战衣", type: "神圣防具", slot: "armor", icon: "💎", atk: 120, def: 220 }]
-            };
-
-            const pool = itemPool[chosenRarity];
-            const template = pool[Math.floor(Math.random() * pool.length)];
-            return {
-                id: Date.now() + Math.random(),
-                name: template.name,
-                type: template.type,
-                slotType: template.slot,
-                count: 1,
-                rarity: chosenRarity,
-                icon: template.icon,
-                atkBonus: template.atk,
-                defBonus: template.def,
-                desc: `战国传世珍宝`
-            };
-        }
-
-        equipItem(itemId) {
-            const index = this.inventory.findIndex(i => i.id === itemId);
-            if (index === -1) return;
-            const item = this.inventory[index];
-
-            if (item.slotType === 'consumable') {
-                this.showModal("使用灵药", `服用了【${item.name}】，真气运转，修为大进！`);
-                item.count--;
-                if (item.count <= 0) this.inventory.splice(index, 1);
-                this.renderInventory();
-                return;
-            }
-
-            let targetSlot = item.slotType;
-            if (targetSlot === 'amulet') {
-                targetSlot = this.equipped.amulet1 ? 'amulet2' : 'amulet1';
-            } else if (targetSlot === 'ring') {
-                targetSlot = this.equipped.ring1 ? 'ring2' : 'ring1';
-            }
-
-            const currentEquipped = this.equipped[targetSlot];
-            if (currentEquipped) {
-                if (this.inventory.length >= this.unlockedBagSlots) {
-                    this.showModal("背包已满", "背包空间不足，无法卸下当前装备！");
-                    return;
-                }
-                this.inventory.push(currentEquipped);
-            }
-
-            this.equipped[targetSlot] = item;
-            this.inventory.splice(index, 1);
-
-            this.renderInventory();
-            this.updateCharacterStats();
-            this.renderEquipmentSlots();
-            this.addBattleLog(`⚔️ 装备了【${item.name}】！`);
-        }
-
-        unequipSlot(slotName) {
-            const item = this.equipped[slotName];
-            if (!item) return;
-
-            if (this.inventory.length >= this.unlockedBagSlots) {
-                this.showModal("背包已满", "背包空间已满，无法卸下装备！");
-                return;
-            }
-
-            this.inventory.push(item);
-            this.equipped[slotName] = null;
-
-            this.renderInventory();
-            this.updateCharacterStats();
-            this.renderEquipmentSlots();
-            this.addBattleLog(`🛡️ 卸下了【${item.name}】。`);
-        }
-
-        unlockBagSlot() {
-            if (this.unlockedBagSlots >= 50) {
-                this.showModal("行囊已全开", "您的背包已全部解锁至50格！");
-                return;
-            }
-            const cost = (this.unlockedBagSlots - 14) * 1000;
-            if (this.silver < cost) {
-                this.showModal("银币不足", `开启第 ${this.unlockedBagSlots + 1} 格需要消耗 ${cost} 银币！`);
-                return;
-            }
-            this.silver -= cost;
-            this.unlockedBagSlots += 5;
-            if (this.unlockedBagSlots > 50) this.unlockedBagSlots = 50;
-            this.updateCurrencyDisplay();
-            this.renderInventory();
-            this.showModal("解锁成功", `行囊已成功扩容！当前已解锁 ${this.unlockedBagSlots} 格。`);
-        }
-
-        renderInventory() {
-            const container = document.getElementById("inventoryContainer");
-            container.innerHTML = "";
-
-            // Total 50 slots
+        function renderBackpack() {
+            const grid = document.getElementById('backpackGrid');
+            grid.innerHTML = '';
             for (let i = 0; i < 50; i++) {
-                const slotDiv = document.createElement("div");
-                
-                if (i < this.unlockedBagSlots) {
-                    const item = this.inventory[i];
-                    if (item) {
-                        let rarityClass = "rarity-white border-slate-600";
-                        if (item.rarity === 'green') rarityClass = "rarity-green border-green-500";
-                        if (item.rarity === 'blue') rarityClass = "rarity-blue border-blue-500";
-                        if (item.rarity === 'purple') rarityClass = "rarity-purple border-purple-500";
-                        if (item.rarity === 'red') rarityClass = "rarity-red border-red-500";
-                        if (item.rarity === 'yellow') rarityClass = "rarity-yellow border-yellow-500";
-                        if (item.rarity === 'platinum') rarityClass = "rarity-platinum border-slate-200";
-                        if (item.rarity === 'rainbow') rarityClass = "rarity-rainbow";
+                let slotDiv = document.createElement('div');
+                let isLocked = i >= game.unlockedBackpackSlots;
+                let item = game.backpack[i];
 
-                        slotDiv.className = `aspect-square rounded-lg border-2 ${rarityClass} flex flex-col justify-center items-center text-center shadow transition hover:scale-105 bg-[var(--bg-card)] cursor-pointer relative`;
-                        slotDiv.onclick = () => this.equipItem(item.id);
-                        slotDiv.innerHTML = `
-                            <div class="text-xl">${item.icon}</div>
-                            <div class="absolute bottom-0.5 right-1 text-[9px] font-bold text-amber-200 bg-black/60 px-1 rounded">x${item.count}</div>
-                        `;
-                    } else {
-                        slotDiv.className = "aspect-square rounded-lg border border-[var(--border-gold)]/40 bg-[var(--bg-main)] flex items-center justify-center text-[10px] opacity-30";
-                        slotDiv.innerHTML = `${i + 1}`;
+                if (isLocked) {
+                    slotDiv.className = "bp-slot locked";
+                    slotDiv.innerHTML = "🔒";
+                } else if (item) {
+                    slotDiv.className = `bp-slot rarity-${item.rarity}`;
+                    slotDiv.innerHTML = `<span>${item.icon}</span>`;
+                    if (item.count && item.count > 1) {
+                        let countBadge = document.createElement('div');
+                        countBadge.className = "item-count";
+                        countBadge.innerText = item.count;
+                        slotDiv.appendChild(countBadge);
                     }
+                    let idx = i;
+                    slotDiv.onclick = function() { selectBackpackItem(idx); };
                 } else {
-                    // Locked slots
-                    slotDiv.className = "aspect-square rounded-lg border border-dashed border-red-900/60 bg-black/40 flex flex-col items-center justify-center text-[10px] cursor-pointer hover:border-red-500 transition text-red-400";
-                    slotDiv.innerHTML = `🔒`;
-                    slotDiv.title = "点击消耗银币解锁此格";
-                    slotDiv.onclick = () => this.unlockBagSlot();
+                    slotDiv.className = "bp-slot";
                 }
-                container.appendChild(slotDiv);
+                grid.appendChild(slotDiv);
             }
-            document.getElementById("bagBadge").textContent = this.inventory.length;
         }
 
-        renderEquipmentSlots() {
-            const slots = ['weapon', 'armor', 'helm', 'boots', 'amulet1', 'amulet2', 'ring1', 'ring2'];
-            slots.forEach(slot => {
-                const slotEl = document.getElementById(`eqSlot_${slot}`);
-                const item = this.equipped[slot];
-                if (slotEl) {
-                    if (item) {
-                        slotEl.innerHTML = `<span class="text-2xl">${item.icon}</span>`;
-                        slotEl.className = `w-12 h-12 rounded-lg flex items-center justify-center text-xl cursor-pointer shadow transition hover:scale-105 ${this.getRarityClass(item.rarity)}`;
-                    } else {
-                        let defaultIcon = "💍";
-                        if (slot === 'helm') defaultIcon = "🪖";
-                        if (slot === 'weapon') defaultIcon = "⚔️";
-                        if (slot === 'armor') defaultIcon = "🛡️";
-                        if (slot === 'boots') defaultIcon = "👢";
-                        if (slot === 'amulet2') defaultIcon = "📿";
-                        slotEl.innerHTML = `<span class="opacity-40 text-xl">${defaultIcon}</span>`;
-                        slotEl.className = "w-12 h-12 bg-[var(--bg-main)] border-2 border-dashed border-[var(--border-gold)] rounded-lg flex items-center justify-center text-xl cursor-pointer hover:border-amber-400 transition shadow";
-                    }
+        function expandBackpack() {
+            if (game.unlockedBackpackSlots >= 50) { showModal("提示", "背包已全部解鎖！"); return; }
+            if (game.silver < 500) { showModal("提示", "銀兩不足 500！"); return; }
+            game.silver -= 500;
+            game.unlockedBackpackSlots = Math.min(50, game.unlockedBackpackSlots + 5);
+            renderBackpack();
+            updateCharacterUI();
+            showModal("提示", "成功擴充 5 格背包！");
+        }
+
+        function selectBackpackItem(index) {
+            let item = game.backpack[index];
+            if (!item) return;
+            showModal("道具詳情", `【${item.name}】<br>點擊確定可裝備或使用。`, function() {
+                if (item.type === 'weapon') {
+                    let old = game.equipment[6];
+                    game.equipment[6] = item;
+                    game.backpack[index] = old;
+                    game.atk += (item.atk || 5);
+                } else if (item.type === 'armor') {
+                    let old = game.equipment[7];
+                    game.equipment[7] = item;
+                    game.backpack[index] = old;
+                    game.def += (item.def || 3);
+                } else {
+                    showModal("提示", `使用了 ${item.name}！`);
+                    game.backpack[index] = null;
                 }
+                renderBackpack();
+                updateCharacterUI();
             });
         }
 
-        getRarityClass(rarity) {
-            if (rarity === 'green') return 'rarity-green border-green-500 bg-[var(--bg-main)]';
-            if (rarity === 'blue') return 'rarity-blue border-blue-500 bg-[var(--bg-main)]';
-            if (rarity === 'purple') return 'rarity-purple border-purple-500 bg-[var(--bg-main)]';
-            if (rarity === 'red') return 'rarity-red border-red-500 bg-[var(--bg-main)]';
-            if (rarity === 'yellow') return 'rarity-yellow border-yellow-500 bg-[var(--bg-main)]';
-            if (rarity === 'platinum') return 'rarity-platinum bg-[var(--bg-main)]';
-            if (rarity === 'rainbow') return 'rarity-rainbow bg-[var(--bg-main)]';
-            return 'rarity-white border-slate-500 bg-[var(--bg-main)]';
+        function selectDifficulty(diff, event) {
+            if (!game.unlockedDiffs[diff]) { showModal("提示", "此難度尚未解鎖！"); return; }
+            game.difficulty = diff;
+            document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
+            if (event && event.currentTarget) event.currentTarget.classList.add('active');
+            renderCityMap();
         }
 
-        updateCharacterStats() {
-            let extraAtk = 0;
-            let extraDef = 0;
+        function renderCityMap() {
+            const canvas = document.getElementById('nodeMapCanvas');
+            const svg = document.getElementById('mapSvgLines');
+            
+            canvas.querySelectorAll('.map-node').forEach(n => n.remove());
+            svg.innerHTML = '';
 
-            Object.values(this.equipped).forEach(item => {
-                if (item) {
-                    if (item.atkBonus) extraAtk += item.atkBonus;
-                    if (item.defBonus) extraDef += item.defBonus;
+            let currentS = game.currentStage[game.difficulty];
+            let maxUnlocked = game.maxUnlockedStage[game.difficulty];
+            let diffNames = { normal: '普通關卡', hell: '地獄關卡', nightmare: '夢魘關卡', godlike: '神人關卡' };
+            document.getElementById('currentMapTitle').innerText = `🏯 九州戰國 · ${diffNames[game.difficulty]} (第 ${currentS} 關 / 100)`;
+
+            ['hell', 'nightmare', 'godlike'].forEach(d => {
+                let btn = document.getElementById(`diffBtn-${d}`);
+                if (btn) {
+                    if (game.unlockedDiffs[d]) {
+                        btn.classList.remove('locked-diff');
+                        btn.innerText = d === 'hell' ? '地獄' : d === 'nightmare' ? '夢魘' : '神人';
+                    } else {
+                        btn.classList.add('locked-diff');
+                    }
                 }
             });
 
-            const totalAtk = this.baseAtk + extraAtk;
-            const totalDef = this.baseDef + extraDef;
+            MAP_NODES.forEach(node => {
+                node.next.forEach(nextId => {
+                    let targetNode = MAP_NODES.find(n => n.id === nextId);
+                    if (targetNode) {
+                        let line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        line.setAttribute('x1', node.x);
+                        line.setAttribute('y1', node.y);
+                        line.setAttribute('x2', targetNode.x);
+                        line.setAttribute('y2', targetNode.y);
+                        line.setAttribute('stroke', node.id < maxUnlocked ? '#22c55e' : '#475569');
+                        line.setAttribute('stroke-width', '3');
+                        if (node.id >= maxUnlocked) line.setAttribute('stroke-dasharray', '4');
+                        svg.appendChild(line);
+                    }
+                });
+            });
 
-            const atkEl = document.getElementById("charAtk");
-            const defEl = document.getElementById("charDef");
-            if (atkEl) atkEl.textContent = totalAtk;
-            if (defEl) defEl.textContent = totalDef;
+            MAP_NODES.forEach(node => {
+                let isUnlocked = node.id <= maxUnlocked;
+                let isCurrent = node.id === currentS;
+                let isCleared = node.id < maxUnlocked;
 
-            this.renderEquipmentSlots();
+                let card = document.createElement('div');
+                let cls = "map-node";
+                if (isCurrent) cls += " current";
+                else if (isCleared) cls += " cleared";
+                else if (isUnlocked) cls += " unlocked";
+                else cls += " locked";
+
+                card.className = cls;
+                card.style.left = node.x + 'px';
+                card.style.top = node.y + 'px';
+
+                let styleIdx = node.id % 5;
+                
+                if (isUnlocked) {
+                    card.innerHTML = `
+                        <div class="castle-sprite style-type-${styleIdx}"></div>
+                        <span class="node-name">${node.name}</span>
+                    `;
+                    let sNum = node.id;
+                    card.onclick = function() {
+                        game.currentStage[game.difficulty] = sNum;
+                        renderCityMap();
+                        updateBattleUI();
+                    };
+                } else {
+                    // 未解鎖也顯示建築，但帶有半透明與鎖頭，避免畫面空白
+                    card.innerHTML = `
+                        <div class="castle-sprite style-type-${styleIdx}" style="filter: brightness(0.4);"></div>
+                        <div class="lock-overlay">🔒</div>
+                        <span class="node-name">${node.name}</span>
+                    `;
+                }
+                canvas.appendChild(card);
+            });
         }
 
-        toggleAutoBattle() {
-            const chk = document.getElementById("autoBattleToggle").checked;
-            this.autoBattle = chk;
-            if (this.autoBattle) {
-                this.battleTimer = setInterval(() => {
-                    if (this.activeEnemy.hp > 0 || this.activeEnemy2.hp > 0) {
-                        this.startBattle();
-                    } else {
-                        clearInterval(this.battleTimer);
-                        document.getElementById("autoBattleToggle").checked = false;
-                        this.autoBattle = false;
-                    }
-                }, 1200);
-                this.addBattleLog(`⚡ 自动挂机战斗已开启...`);
+        function jumpToCurrentBattle() {
+            switchTab('battle');
+            let tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach((el, idx) => { if (idx === 3) el.classList.add('active'); else el.classList.remove('active'); });
+        }
+
+        let battleInterval = null;
+        let isBattling = false;
+        let autoBattle = false;
+        let enemy = { name: "山賊", level: 1, hp: 15, maxHp: 15, mp: 8, maxMp: 8, atk: 3, def: 1 };
+
+        function toggleBattleState() {
+            isBattling = !isBattling;
+            let btn = document.getElementById('battleActionBtn');
+            if (isBattling) {
+                btn.innerText = "停止";
+                btn.classList.add('active-battle');
+                startBattleLoop();
             } else {
-                clearInterval(this.battleTimer);
-                this.addBattleLog(`🛑 自动战斗已关闭。`);
+                btn.innerText = "開始戰鬥";
+                btn.classList.remove('active-battle');
+                stopBattleLoop();
             }
         }
 
-        updateBattleUI() {
-            document.getElementById("p1Hp").textContent = `${this.p1.hp}/${this.p1.maxHp}`;
-            document.getElementById("p1HpBar").style.width = `${(this.p1.hp / this.p1.maxHp) * 100}%`;
-            document.getElementById("p1Mp").textContent = `${this.p1.mp}/${this.p1.maxMp}`;
-            document.getElementById("p1MpBar").style.width = `${(this.p1.mp / this.p1.maxMp) * 100}%`;
-
-            document.getElementById("e1Hp").textContent = `${this.activeEnemy.hp}/${this.activeEnemy.maxHp}`;
-            document.getElementById("e1HpBar").style.width = `${(this.activeEnemy.hp / this.activeEnemy.maxHp) * 100}%`;
-            document.getElementById("e2Hp").textContent = `${this.activeEnemy2.hp}/${this.activeEnemy2.maxHp}`;
-            document.getElementById("e2HpBar").style.width = `${(this.activeEnemy2.hp / this.activeEnemy2.maxHp) * 100}%`;
+        function toggleAutoBattle() {
+            autoBattle = document.getElementById('autoBattleCheck').checked;
+            if (autoBattle && !isBattling) toggleBattleState();
         }
 
-        updateCurrencyDisplay() {
-            const formatted = this.silver.toLocaleString();
-            document.getElementById("silverDisplay").textContent = formatted;
+        function startBattleLoop() {
+            let stageNum = game.currentStage[game.difficulty];
+            let diffMult = game.difficulty === 'hell' ? 2 : game.difficulty === 'nightmare' ? 3 : game.difficulty === 'godlike' ? 4 : 1;
+
+            enemy.level = stageNum;
+            enemy.maxHp = Math.floor((10 + stageNum * 4) * diffMult + 10);
+            enemy.hp = enemy.maxHp;
+            enemy.atk = (3 + Math.floor(stageNum * 0.8)) * diffMult;
+            enemy.def = Math.floor((1 + Math.floor(stageNum * 0.4)) * diffMult + 1);
+            
+            let nodeData = MAP_NODES.find(n => n.id === stageNum);
+            enemy.name = nodeData ? nodeData.name + " 守衛" : `敵方守衛`;
+
+            updateBattleUI();
+            addBattleLog(`[戰鬥] 遭遇 ${enemy.name} Lv.${stageNum}`);
+
+            battleInterval = setInterval(() => {
+                if (!isBattling) return;
+
+                let pDmg = Math.max(1, game.atk - enemy.def + Math.floor(Math.random() * 4));
+                enemy.hp -= pDmg;
+                addBattleLog(`⚔️ 造成 <span style="color:#22c55e;">${pDmg}</span> 傷害`);
+
+                if (enemy.hp <= 0) { enemy.hp = 0; updateBattleUI(); winBattle(); return; }
+
+                let eDmg = Math.max(1, enemy.atk - game.def + Math.floor(Math.random() * 2));
+                game.hp -= eDmg;
+                addBattleLog(`⚠️ 受到 <span style="color:#ef4444;">${eDmg}</span> 傷害`);
+
+                if (game.hp <= 0) { game.hp = 0; updateBattleUI(); loseBattle(); return; }
+
+                updateBattleUI();
+            }, 1200);
         }
 
-        addBattleLog(msg) {
-            const box = document.getElementById("battleLogContainer");
-            const div = document.createElement("div");
-            const count = box.children.length + 1;
-            div.innerHTML = `${count}. ${msg}`;
-            box.insertBefore(div, box.firstChild);
-            if(box.children.length > 35) box.removeChild(box.lastChild);
+        function stopBattleLoop() {
+            if (battleInterval) clearInterval(battleInterval);
+            battleInterval = null;
         }
 
-        showModal(title, msg) {
-            document.getElementById("modalTitle").textContent = title;
-            document.getElementById("modalMessage").textContent = msg;
-            document.getElementById("customModal").classList.remove("hidden");
+        function updateBattleUI() {
+            let stageNum = game.currentStage[game.difficulty];
+            let nodeData = MAP_NODES.find(n => n.id === stageNum);
+            document.getElementById('battleStageInfo').innerText = `${nodeData ? nodeData.name : ''} (${game.difficulty})`;
+            document.getElementById('playerHpText').innerText = `${game.hp}/${game.maxHp}`;
+            document.getElementById('playerHpBar').style.width = `${Math.max(0, (game.hp / game.maxHp) * 100)}%`;
+            document.getElementById('battleEnemyName').innerText = enemy.name;
+            document.getElementById('battleEnemyLevel').innerText = `Lv.${enemy.level}`;
+            document.getElementById('enemyHpText').innerText = `${enemy.hp}/${enemy.maxHp}`;
+            document.getElementById('enemyHpBar').style.width = `${Math.max(0, (enemy.hp / enemy.maxHp) * 100)}%`;
         }
 
-        closeModal() {
-            document.getElementById("customModal").classList.add("hidden");
+        function addBattleLog(text) {
+            const box = document.getElementById('battleLogBox');
+            let div = document.createElement('div');
+            div.innerHTML = text;
+            box.appendChild(div);
+            if (box.children.length > 50) box.removeChild(box.firstChild);
+            box.scrollTop = box.scrollHeight;
         }
-    }
 
-    let game;
-    window.onload = function() {
-        game = new WuxiaGameEngine();
-    };
-</script>
+        function winBattle() {
+            stopBattleLoop();
+            isBattling = false;
+            document.getElementById('battleActionBtn').innerText = "開始戰鬥";
+            document.getElementById('battleActionBtn').classList.remove('active-battle');
+
+            let stageNum = game.currentStage[game.difficulty];
+            let expGain = 40 + stageNum * 12;
+            let silverGain = 30 + stageNum * 8;
+            game.exp += expGain;
+            game.silver += silverGain;
+
+            addBattleLog(`🎉 勝利！經驗 +${expGain}，銀幣 +${silverGain}`);
+
+            if (stageNum === game.maxUnlockedStage[game.difficulty] && stageNum < 100) {
+                game.maxUnlockedStage[game.difficulty]++;
+            } else if (stageNum === 100 && game.difficulty === 'normal') {
+                game.unlockedDiffs.hell = true;
+                showModal("通關!", "解鎖地獄難度！");
+            }
+
+            if (stageNum < 100) game.currentStage[game.difficulty]++;
+            game.hp = game.maxHp;
+            updateCharacterUI();
+            renderCityMap();
+            renderBackpack();
+            updateBattleUI();
+        }
+
+        function loseBattle() {
+            stopBattleLoop();
+            isBattling = false;
+            document.getElementById('battleActionBtn').innerText = "開始戰鬥";
+            document.getElementById('battleActionBtn').classList.remove('active-battle');
+            addBattleLog(`💥 戰鬥失敗...`);
+            game.hp = game.maxHp;
+            updateCharacterUI();
+            updateBattleUI();
+        }
+
+        function sendChatMessage() {
+            let input = document.getElementById('chatInputMsg');
+            let txt = input.value.trim();
+            if (!txt) return;
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML += `<div><span style="color:#f3e5ab;">[我]</span> ${txt}</div>`;
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function switchSuit(num) { showModal("套裝", `切換至套裝 ${num}`); }
+        function viewSuit() { showModal("套裝預覽", "當前裝備配置。"); }
+        function openEquipmentSlot(i) { showModal("裝備欄", "可在背包點擊裝備穿戴。"); }
+        function openSubModal(t) { showModal(t, `進入【${t}】系統。`); }
+        function saveGameData() { localStorage.setItem('zhanguo_save', JSON.stringify(game)); showModal("存檔", "儲存成功！"); }
+        function resetGameData() { showModal("重置確認", "確定重置？", () => { localStorage.removeItem('zhanguo_save'); location.reload(); }); }
+
+        function showModal(title, content, cb) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('genericModal').style.display = 'flex';
+            window.modalCallback = cb;
+        }
+        function closeModal() {
+            document.getElementById('genericModal').style.display = 'none';
+            if (window.modalCallback) { let cb = window.modalCallback; window.modalCallback = null; cb(); }
+        }
+
+        window.onload = function() {
+            let saved = localStorage.getItem('zhanguo_save');
+            if (saved) { try { Object.assign(game, JSON.parse(saved)); } catch (e) {} }
+            initBackpack();
+            updateCharacterUI();
+            renderCityMap();
+            renderBackpack();
+            updateBattleUI();
+        };
+    </script>
 </body>
 </html>
